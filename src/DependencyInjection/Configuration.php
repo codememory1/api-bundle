@@ -14,38 +14,10 @@ final class Configuration implements ConfigurationInterface
         $builder = new TreeBuilder('codememory_api');
         $rootNode = $builder->getRootNode();
 
-        $this->addFiltersSection($rootNode);
         $this->addPaginationSection($rootNode);
         $this->addThreadingSection($rootNode);
 
         return $builder;
-    }
-
-    private function addFiltersSection(ArrayNodeDefinition $node): void
-    {
-        $node
-            ->children()
-                ->arrayNode('filters')
-                    ->useAttributeAsKey('route_name')
-                    ->arrayPrototype()
-                        ->useAttributeAsKey('filter_namespace')
-                        ->arrayPrototype()
-                            ->addDefaultsIfNotSet()
-                            ->children()
-                                ->scalarNode('label')
-                                    ->isRequired()
-                                    ->cannotBeEmpty()
-                                    ->info('Filter Name')
-                                ->end()
-                                ->arrayNode('options')
-                                    ->ignoreExtraKeys()
-                                    ->info('Filter options, no exact design because each filter has its own options')
-                                ->end()
-                            ->end()
-                        ->end()
-                    ->end()
-                ->end()
-            ->end();
     }
 
     private function addPaginationSection(ArrayNodeDefinition $node): void
