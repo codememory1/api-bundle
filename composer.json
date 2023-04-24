@@ -1,0 +1,28 @@
+{
+    "name": "codememory/api-bundle",
+    "type": "symfony-bundle",
+    "autoload": {
+        "psr-4": {
+            "Codememory\\ApiBundle\\": "src/"
+        }
+    },
+    "authors": [
+        {
+            "name": "Codememory",
+            "email": "kostynd1@gmail.com"
+        }
+    ],
+    "require": {
+        "php": ">=8.1",
+        "ext-pcntl": "*",
+        "ext-posix": "*",
+        "symfony/orm-pack": "2.3.*",
+        "symfony/cache": "6.2.*",
+        "symfony/http-foundation": "6.2.*",
+        "symfony/validator": "6.2.*",
+        "doctrine/doctrine-bundle": "*",
+        "codememory/dto": "3.0.1",
+        "ramsey/uuid": "^4.7.3",
+        "justinrainbow/json-schema": "^5.2"
+    }
+}
