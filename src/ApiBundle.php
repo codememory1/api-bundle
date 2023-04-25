@@ -7,6 +7,7 @@ use Codememory\ApiBundle\DependencyInjection\Compiler\AddDtoConstraintPass;
 use Codememory\ApiBundle\DependencyInjection\Compiler\AddResponseControlConstraintPass;
 use Codememory\ApiBundle\DependencyInjection\Compiler\AddResponseControlConstraintTypePass;
 use Codememory\ApiBundle\DependencyInjection\Compiler\DtoObjectRegisterPass;
+use Codememory\ApiBundle\DependencyInjection\Compiler\RegisterDecoratorPass;
 use Codememory\ApiBundle\DependencyInjection\Compiler\ResponseControlObjectRegisterPass;
 use JetBrains\PhpStorm\Pure;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
@@ -41,6 +42,8 @@ final class ApiBundle extends Bundle
     public const PAGINATION_DEFAULT_OPTIONS_SERVICE_ID = 'codememory.pagination.default_options';
     public const PAGINATION_MIN_LIMIT_PARAMETER = 'codememory.pagination.min_limit';
     public const PAGINATION_MAX_LIMIT_PARAMETER = 'codememory.pagination.max_limit';
+    public const DECORATOR_SERVICE_ID = 'codememory.decorator';
+    public const DECORATOR_HANDLER_TAG = 'codememory.decorator.handler';
 
     public function build(ContainerBuilder $container): void
     {
@@ -51,6 +54,7 @@ final class ApiBundle extends Bundle
         $container->addCompilerPass(new AddResponseControlConstraintTypePass());
         $container->addCompilerPass(new AddResponseControlConstraintPass());
         $container->addCompilerPass(new ResponseControlObjectRegisterPass());
+        $container->addCompilerPass(new RegisterDecoratorPass());
     }
 
     #[Pure]

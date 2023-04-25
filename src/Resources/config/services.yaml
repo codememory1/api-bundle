@@ -1,4 +1,6 @@
 services:
+  Symfony\Component\DependencyInjection\ContainerInterface: '@service_container'
+
   Codememory\ApiBundle\EventListener\KernelControllerViewEventListener:
     tags:
       - { name: kernel.event_listener, event: kernel.view, method: onKernelView }
@@ -6,3 +8,9 @@ services:
   Codememory\ApiBundle\EventListener\KernelException\HttpExceptionEventListener:
     tags:
       - { name: kernel.event_listener, event: kernel.exception, method: onKernelException }
+
+  Codememory\ApiBundle\EventListener\KernelController\AttributeControllerEventListener:
+    arguments:
+      $decorator: '@codememory.decorator'
+    tags:
+      - { name: kernel.event_listener, event: kernel.controller, method: onKernelController }
