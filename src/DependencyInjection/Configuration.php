@@ -14,10 +14,31 @@ final class Configuration implements ConfigurationInterface
         $builder = new TreeBuilder('codememory_api');
         $rootNode = $builder->getRootNode();
 
+        $this->addAssertSection($rootNode);
         $this->addPaginationSection($rootNode);
         $this->addThreadingSection($rootNode);
 
         return $builder;
+    }
+
+    private function addAssertSection(ArrayNodeDefinition $node): void
+    {
+        $node
+            ->children()
+                ->arrayNode('assert')
+                    ->addDefaultsIfNotSet()
+                    ->children()
+                        ->integerNode('default_http_code')
+                            ->defaultValue(400)
+                            ->info('Default HTTP code to be used if no code is passed in the payload constraint')
+                        ->end()
+                        ->integerNode('default_platform_code')
+                            ->defaultValue(0)
+                            ->info('Platform default code')
+                        ->end()
+                    ->end()
+                ->end()
+            ->end();
     }
 
     private function addPaginationSection(ArrayNodeDefinition $node): void

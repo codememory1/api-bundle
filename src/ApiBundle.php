@@ -37,6 +37,7 @@ final class ApiBundle extends Bundle
     public const PROCESS_OPTIONS_SERVICE_ID = 'codememory.multithreading.process_options';
     public const PROCESS_MANAGER_SERVICE_ID = 'codememory.multithreading.process_manager';
     public const JSON_SCHEMA_VALIDATOR_SERVICE_ID = 'codememory.validator.json';
+    public const ASSERT_VALIDATOR_SERVICE_ID = 'codememory.validator.assert';
     public const PAGINATION_DEFAULT_OPTIONS_SERVICE_ID = 'codememory.pagination.default_options';
     public const PAGINATION_MIN_LIMIT_PARAMETER = 'codememory.pagination.min_limit';
     public const PAGINATION_MAX_LIMIT_PARAMETER = 'codememory.pagination.max_limit';
