@@ -8,18 +8,18 @@ use Codememory\ApiBundle\ResponseSchema\ResponseSchema;
 use Codememory\ApiBundle\ResponseSchema\View\SuccessView;
 use Codememory\EntityResponseControl\Interfaces\ResponseControlInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController as SymfonyAbstractController;
-use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\RequestStack;
 
 abstract class AbstractController extends SymfonyAbstractController
 {
     public function __construct(
-        private readonly Request $request
+        private readonly RequestStack $requestStack
     ) {
     }
 
     protected function getRequestData(): array
     {
-        return json_decode($this->request->getContent(), true);
+        return json_decode($this->requestStack->getCurrentRequest()->getContent(), true);
     }
 
     public function response(int $httpCode, ViewInterface $view): ResponseSchemaInterface
