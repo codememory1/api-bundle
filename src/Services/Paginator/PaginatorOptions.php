@@ -2,8 +2,8 @@
 
 namespace Codememory\ApiBundle\Services\Paginator;
 
-use Codememory\ApiBundle\Services\PaginationQueryProcessor;
 use Codememory\ApiBundle\Services\Paginator\Interfaces\PaginatorOptionsInterface;
+use Codememory\ApiBundle\Services\QueryProcessor\PaginationQueryProcessor;
 
 final class PaginatorOptions implements PaginatorOptionsInterface
 {

@@ -14,7 +14,7 @@ trait UpdatedAtTrait
     {
         return $this->updatedAt;
     }
-    
+
     #[ORM\PreUpdate]
     public function setUpdatedAt(): self
     {
