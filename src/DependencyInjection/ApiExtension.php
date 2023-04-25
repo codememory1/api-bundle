@@ -12,6 +12,7 @@ use Codememory\ApiBundle\Services\Paginator\Paginator;
 use Codememory\ApiBundle\Services\Paginator\PaginatorOptions;
 use Codememory\ApiBundle\Services\QueryProcessor\FilterQueryProcessor;
 use Codememory\ApiBundle\Services\QueryProcessor\SortQueryProcessor;
+use Codememory\ApiBundle\Validator\Assert\AssertValidator;
 use Codememory\ApiBundle\Validator\JsonSchema\JsonSchemaValidator;
 use Exception;
 use Symfony\Component\Config\FileLocator;
@@ -20,6 +21,7 @@ use Symfony\Component\DependencyInjection\Extension\Extension;
 use Symfony\Component\DependencyInjection\Loader\YamlFileLoader;
 use Symfony\Component\DependencyInjection\Reference;
 use Symfony\Component\HttpFoundation\RequestStack;
+use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 final class ApiExtension extends Extension
 {
@@ -43,6 +45,7 @@ final class ApiExtension extends Extension
         $this->registerProcessOptions($config['threading']['process_options'], $container);
         $this->registerProcessManager($container);
         $this->registerJsonSchemaValidator($container);
+        $this->registerAssertValidator($config['assert'], $container);
         $this->registerPaginationParameters($config['pagination'], $container);
         $this->registerQueryProcessors($container);
         $this->registerPaginator($config['pagination'], $container);
@@ -88,6 +91,18 @@ final class ApiExtension extends Extension
         $container->register(ApiBundle::JSON_SCHEMA_VALIDATOR_SERVICE_ID, JsonSchemaValidator::class);
 
         $container->setAlias(JsonSchemaValidator::class, ApiBundle::JSON_SCHEMA_VALIDATOR_SERVICE_ID);
+    }
+
+    private function registerAssertValidator(array $config, ContainerBuilder $container): void
+    {
+        $container
+            ->register(ApiBundle::ASSERT_VALIDATOR_SERVICE_ID, AssertValidator::class)
+            ->setArguments([
+                '$validator' => new Reference(ValidatorInterface::class),
+                '$config' => $config
+            ]);
+
+        $container->setAlias(AssertValidator::class, ApiBundle::ASSERT_VALIDATOR_SERVICE_ID);
     }
 
     private function registerPaginationParameters(array $config, ContainerBuilder $container): void
