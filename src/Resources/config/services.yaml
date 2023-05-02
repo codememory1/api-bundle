@@ -14,3 +14,7 @@ services:
       $decorator: '@codememory.decorator'
     tags:
       - { name: kernel.event_listener, event: kernel.controller, method: onKernelController }
+
+  Codememory\ApiBundle\Decorator\ControllerEntityArgument\EntityNotFoundHandler:
+    tags:
+      - { name: codememory.decorator.handler }

@@ -17,7 +17,7 @@ class Decorator
     /**
      * @param array<int, ReflectionAttribute> $attributes
      */
-    public function handle(array $attributes, object $object): void
+    public function handle(array $attributes, object $object, mixed ...$args): void
     {
         foreach ($attributes as $attribute) {
             $attributeInstance = $attribute->newInstance();
@@ -37,7 +37,7 @@ class Decorator
                     throw new RuntimeException(sprintf('The %s decorator handler must implement the %s interface', $attributeInstance->getHandler(), DecoratorHandlerInterface::class));
                 }
 
-                $decoratorHandler->handle($attributeInstance, $object);
+                $decoratorHandler->handle($attributeInstance, $object, ...$args);
             }
         }
     }
