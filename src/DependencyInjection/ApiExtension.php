@@ -6,6 +6,7 @@ use Codememory\ApiBundle\ApiBundle;
 use Codememory\ApiBundle\Multithreading\ProcessManager;
 use Codememory\ApiBundle\Multithreading\ProcessOptions;
 use Codememory\ApiBundle\Multithreading\WorkerOptions;
+use Codememory\ApiBundle\Resolver\ControllerEntityArgumentResolver;
 use Codememory\ApiBundle\Services\Paginator\Interfaces\PaginatorOptionsInterface;
 use Codememory\ApiBundle\Services\Paginator\Paginator;
 use Codememory\ApiBundle\Services\Paginator\PaginatorOptions;
@@ -14,6 +15,7 @@ use Codememory\ApiBundle\Services\QueryProcessor\PaginationQueryProcessor;
 use Codememory\ApiBundle\Services\QueryProcessor\SortQueryProcessor;
 use Codememory\ApiBundle\Validator\Assert\AssertValidator;
 use Codememory\ApiBundle\Validator\JsonSchema\JsonSchemaValidator;
+use Doctrine\ORM\EntityManagerInterface;
 use Exception;
 use Symfony\Component\Config\FileLocator;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
@@ -49,6 +51,7 @@ final class ApiExtension extends Extension
         $this->registerPaginationParameters($config['pagination'], $container);
         $this->registerQueryProcessors($container);
         $this->registerPaginator($config['pagination'], $container);
+        $this->registerResolver($container);
     }
 
     private function registerWorkerOptions(array $options, ContainerBuilder $container): void
@@ -151,6 +154,16 @@ final class ApiExtension extends Extension
             ->setArguments([
                 '$requestStack' => new Reference(RequestStack::class),
                 '$jsonSchemaValidator' => new Reference(JsonSchemaValidator::class)
+            ]);
+    }
+
+    private function registerResolver(ContainerBuilder $container): void
+    {
+        $container
+            ->register(ControllerEntityArgumentResolver::class, ControllerEntityArgumentResolver::class)
+            ->setArguments([
+                '$em' => new Reference(EntityManagerInterface::class),
+                '$decorator' => new Reference(ApiBundle::DECORATOR_SERVICE_ID)
             ]);
     }
 }
