@@ -3,6 +3,7 @@
 namespace Codememory\ApiBundle\Repository;
 
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
+use Doctrine\ORM\QueryBuilder;
 use Doctrine\Persistence\ManagerRegistry;
 
 abstract class AbstractRepository extends ServiceEntityRepository
@@ -13,5 +14,10 @@ abstract class AbstractRepository extends ServiceEntityRepository
     public function __construct(ManagerRegistry $registry)
     {
         parent::__construct($registry, $this->entity);
+    }
+
+    public function createQB(?string $indexBy = null): QueryBuilder
+    {
+        return $this->createQueryBuilder($this->alias, $indexBy);
     }
 }

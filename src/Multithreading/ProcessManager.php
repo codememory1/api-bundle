@@ -28,7 +28,7 @@ class ProcessManager
     {
         $process = new Process($this->processOptions);
 
-        call_user_func($callback, $process);
+        call_user_func($callback, $process, count($this->processes) + 1);
 
         $this->processes[] = $process;
 
