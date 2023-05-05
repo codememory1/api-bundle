@@ -37,8 +37,6 @@ final class Fork
                 }
             }
 
-            echo 'Используется: ' . (number_format(memory_get_usage() / 1024)) . " KB\n";
-
             $this->process->completeByMemory();
 
             usleep($this->process->options->getDelayBetweenIterationCallbackLogicCall() * 1000);
