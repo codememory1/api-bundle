@@ -24,6 +24,19 @@ class ProcessManager
     ) {
     }
 
+    public function addFew(int $count, callable $callback): self
+    {
+        $i = 0;
+
+        while ($i < $count) {
+            $this->add($callback);
+            
+            $i++;
+        }
+
+        return $this;
+    }
+
     public function add(callable $callback): self
     {
         $process = new Process($this->processOptions);
