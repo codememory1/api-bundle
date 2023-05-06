@@ -3,6 +3,7 @@
 namespace Codememory\ApiBundle\DependencyInjection;
 
 use Codememory\ApiBundle\ApiBundle;
+use Codememory\ApiBundle\EventListener\KernelException\HttpExceptionEventListener;
 use Codememory\ApiBundle\Multithreading\ProcessManager;
 use Codememory\ApiBundle\Multithreading\ProcessOptions;
 use Codememory\ApiBundle\Multithreading\WorkerOptions;
@@ -43,6 +44,7 @@ final class ApiExtension extends Extension
 
         $config = $this->processConfiguration(new Configuration(), $configs);
 
+        $this->registerExceptionEventListener($config['http_error_handler'], $container);
         $this->registerWorkerOptions($config['threading']['worker_options'], $container);
         $this->registerProcessOptions($config['threading']['process_options'], $container);
         $this->registerProcessManager($container);
@@ -52,6 +54,20 @@ final class ApiExtension extends Extension
         $this->registerQueryProcessors($container);
         $this->registerPaginator($config['pagination'], $container);
         $this->registerResolver($container);
+    }
+
+    private function registerExceptionEventListener(array $httpErrorHandlerConfig, ContainerBuilder $container): void
+    {
+        $container
+            ->register(HttpExceptionEventListener::class, HttpExceptionEventListener::class)
+            ->setArguments([
+                '$env' => $container->getParameter('kernel.environment'),
+                '$httpErrorHandlerConfig' => $httpErrorHandlerConfig
+            ])
+            ->addTag('kernel.event_listener', [
+                'event' => 'kernel.exception',
+                'method' => 'onKernelException'
+            ]);
     }
 
     private function registerWorkerOptions(array $options, ContainerBuilder $container): void
