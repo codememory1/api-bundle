@@ -63,6 +63,10 @@ final class ApiExtension extends Extension
             ->setArguments([
                 '$env' => $container->getParameter('kernel.environment'),
                 '$httpErrorHandlerConfig' => $httpErrorHandlerConfig
+            ])
+            ->addTag('kernel.event_listener', [
+                'event' => 'kernel.exception',
+                'method' => 'onKernelException'
             ]);
     }
 

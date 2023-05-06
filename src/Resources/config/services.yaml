@@ -5,11 +5,6 @@ services:
     tags:
       - { name: kernel.event_listener, event: kernel.view, method: onKernelView }
 
-  Codememory\ApiBundle\EventListener\KernelException\HttpExceptionEventListener:
-    autowire: true
-    tags:
-      - { name: kernel.event_listener, event: kernel.exception, method: onKernelException }
-
   Codememory\ApiBundle\EventListener\KernelController\AttributeControllerEventListener:
     arguments:
       $decorator: '@codememory.decorator'
