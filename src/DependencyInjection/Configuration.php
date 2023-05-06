@@ -17,6 +17,7 @@ final class Configuration implements ConfigurationInterface
         $this->addAssertSection($rootNode);
         $this->addPaginationSection($rootNode);
         $this->addThreadingSection($rootNode);
+        $this->addHttpErrorHandlerSection($rootNode);
 
         return $builder;
     }
@@ -92,6 +93,66 @@ final class Configuration implements ConfigurationInterface
                                 ->integerNode('max_memory_usage')
                                     ->defaultValue(100 * (1024 * 1024)) // 100MB
                                     ->info('The maximum number of bytes a process can use')
+                                ->end()
+                            ->end()
+                        ->end()
+                    ->end()
+                ->end()
+            ->end();
+    }
+
+    private function addHttpErrorHandlerSection(ArrayNodeDefinition $node): void
+    {
+        $node
+            ->children()
+                ->arrayNode('http_error_handler')
+                    ->addDefaultsIfNotSet()
+                    ->children()
+                        ->arrayNode('403')
+                            ->children()
+                                ->scalarNode('message')
+                                    ->defaultValue('Access is denied')
+                                    ->info('Message to be displayed')
+                                ->end()
+                                ->integerNode('platform_code')
+                                    ->defaultValue(-1)
+                                    ->info('Custom platform code')
+                                ->end()
+                            ->end()
+                        ->end()
+                        ->arrayNode('404')
+                            ->children()
+                                ->scalarNode('message')
+                                    ->defaultValue('Page not found')
+                                    ->info('Message to be displayed')
+                                ->end()
+                                ->integerNode('platform_code')
+                                    ->defaultValue(-1)
+                                    ->info('Custom platform code')
+                                ->end()
+                            ->end()
+                        ->end()
+                        ->arrayNode('405')
+                            ->children()
+                                ->scalarNode('message')
+                                    ->defaultValue('Route does not support this method')
+                                    ->info('Message to be displayed')
+                                ->end()
+                                ->integerNode('platform_code')
+                                    ->defaultValue(-1)
+                                    ->info('Custom platform code')
+                                ->end()
+                            ->end()
+                        ->end()
+                        ->arrayNode('500')
+                            ->children()
+                                ->scalarNode('message')
+                                    ->defaultValue('Server Error')
+                                    ->info('Message to be displayed')
+                                ->end()
+                                ->integerNode('platform_code')
+                                    ->defaultValue(-1)
+                                    ->info('Custom platform code')
                                 ->end()
                             ->end()
                         ->end()
