@@ -32,7 +32,7 @@ final class AddJWTAdapterPass implements CompilerPassInterface
             }
 
             $container
-                ->register($id)
+                ->getDefinition($id)
                 ->setArguments([
                     '$privateKey' => file_exists($tag['private']) ? file_get_contents($tag['private']) : null,
                     '$publicKey' => file_exists($tag['public']) ? file_get_contents($tag['public']) : null,
