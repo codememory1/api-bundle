@@ -31,11 +31,14 @@ final class AddJWTAdapterPass implements CompilerPassInterface
                 throw new ServiceTagHasNoKeyException(ApiBundle::JWT_ADAPTER_TAG, $id, 'ttl');
             }
 
+            $private = $container->getParameterBag()->resolveValue($tag['private']);
+            $public = $container->getParameterBag()->resolveValue($tag['public']);
+            
             $container
                 ->getDefinition($id)
                 ->setArguments([
-                    '$privateKey' => file_exists($tag['private']) ? file_get_contents($tag['private']) : null,
-                    '$publicKey' => file_exists($tag['public']) ? file_get_contents($tag['public']) : null,
+                    '$privateKey' => file_exists($private) ? file_get_contents($private) : null,
+                    '$publicKey' => file_exists($public) ? file_get_contents($public) : null,
                     '$ttl' => $tag['ttl']
                 ]);
         }
