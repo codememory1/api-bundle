@@ -7,10 +7,12 @@ use DateTimeImmutable;
 use Firebase\JWT\Key;
 use LogicException;
 use Firebase\JWT\JWT;
-use SebastianBergmann\Diff\Exception;
+use Throwable;
 
 class BaseJWTAdapter implements JWTAdapterInterface
 {
+    protected string $alg = 'RS256';
+
     public function __construct(
         private readonly ?string $privateKey,
         private readonly ?string $publicKey,
@@ -18,7 +20,14 @@ class BaseJWTAdapter implements JWTAdapterInterface
     ) {
     }
 
-    public function encode(array $payload, string $alg = 'RS256'): string
+    public function setAlg(string $alg): self
+    {
+        $this->alg = $alg;
+
+        return $this;
+    }
+
+    public function encode(array $payload): string
     {
         if (null === $this->privateKey) {
             throw new LogicException(sprintf(
@@ -27,10 +36,10 @@ class BaseJWTAdapter implements JWTAdapterInterface
             ));
         }
 
-        return JWT::encode($this->payloadBuilder($payload), $this->publicKey, $alg);
+        return JWT::encode($this->payloadBuilder($payload), $this->privateKey, $this->alg);
     }
 
-    public function decode(string $token, string $alg = 'RS256'): array|bool
+    public function decode(string $token): array|bool
     {
         if (null === $this->publicKey) {
             throw new LogicException(sprintf(
@@ -40,8 +49,8 @@ class BaseJWTAdapter implements JWTAdapterInterface
         }
 
         try {
-            return (array) JWT::decode($token, new Key($this->publicKey, $alg));
-        } catch (Exception) {
+            return (array) JWT::decode($token, new Key($this->publicKey, $this->alg));
+        } catch (Throwable) {
             return false;
         }
     }
