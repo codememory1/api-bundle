@@ -14,7 +14,7 @@ final class AddJWTAdapterPass implements CompilerPassInterface
      */
     public function process(ContainerBuilder $container): void
     {
-        $definitions = $container->findDefinition(ApiBundle::JWT_ADAPTER_TAG);
+        $definitions = $container->findTaggedServiceIds(ApiBundle::JWT_ADAPTER_TAG);
 
         foreach ($definitions as $id => $tags) {
             $tag = $tags[0];
