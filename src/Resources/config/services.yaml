@@ -14,3 +14,7 @@ services:
   Codememory\ApiBundle\Decorator\ControllerEntityArgument\EntityNotFoundHandler:
     tags:
       - { name: codememory.decorator.handler }
+        
+  Codememory\ApiBundle\Command\OpenSSLKeyCommand:
+    tags:
+      - { name: console.command, command: 'codememory:openssl:generate-key' }

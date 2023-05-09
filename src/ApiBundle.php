@@ -4,6 +4,7 @@ namespace Codememory\ApiBundle;
 
 use Codememory\ApiBundle\DependencyInjection\ApiExtension;
 use Codememory\ApiBundle\DependencyInjection\Compiler\AddDtoConstraintPass;
+use Codememory\ApiBundle\DependencyInjection\Compiler\AddJWTAdapterPass;
 use Codememory\ApiBundle\DependencyInjection\Compiler\AddResponseControlConstraintPass;
 use Codememory\ApiBundle\DependencyInjection\Compiler\AddResponseControlConstraintTypePass;
 use Codememory\ApiBundle\DependencyInjection\Compiler\DtoObjectRegisterPass;
@@ -44,6 +45,7 @@ final class ApiBundle extends Bundle
     public const PAGINATION_MAX_LIMIT_PARAMETER = 'codememory.pagination.max_limit';
     public const DECORATOR_SERVICE_ID = 'codememory.decorator';
     public const DECORATOR_HANDLER_TAG = 'codememory.decorator.handler';
+    public const JWT_ADAPTER_TAG = 'codememory.jwt.adapter';
 
     public function build(ContainerBuilder $container): void
     {
@@ -55,6 +57,7 @@ final class ApiBundle extends Bundle
         $container->addCompilerPass(new AddResponseControlConstraintPass());
         $container->addCompilerPass(new ResponseControlObjectRegisterPass());
         $container->addCompilerPass(new RegisterDecoratorPass());
+        $container->addCompilerPass(new AddJWTAdapterPass());
     }
 
     #[Pure]
