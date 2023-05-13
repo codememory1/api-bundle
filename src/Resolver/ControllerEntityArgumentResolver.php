@@ -25,13 +25,12 @@ final class ControllerEntityArgumentResolver implements ValueResolverInterface
     public function resolve(Request $request, ArgumentMetadata $argument): iterable
     {
         if ($this->supports($argument)) {
-            /** @var array<int, ReflectionAttribute> $argumentAttributes */
             $argumentAttributes = $argument->getAttributes();
             $routeParameter = $this->getRouteParameter($request, $argument);
             $entityRepository = $this->em->getRepository($argument->getType());
             $finedEntity = $entityRepository->findOneBy([$routeParameter['property'] => $routeParameter['value']]);
 
-            $this->decorator->handle($argumentAttributes, $this->getController($request), $finedEntity);
+            $this->decorator->handleByAttributeInstances($argumentAttributes, $this->getController($request), $finedEntity);
 
             yield $finedEntity;
         } else {
