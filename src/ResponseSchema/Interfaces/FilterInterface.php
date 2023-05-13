@@ -10,5 +10,5 @@ interface FilterInterface
 
     public function getElement(): string;
 
-    public function getViewSettings(): array;
+    public function getExtra(): array;
 }
