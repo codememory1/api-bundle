@@ -7,6 +7,7 @@ use Codememory\ApiBundle\Services\Decorator\Decorator;
 use Doctrine\ORM\EntityManagerInterface;
 use LogicException;
 use ReflectionAttribute;
+use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpKernel\Controller\ValueResolverInterface;
 use Symfony\Component\HttpKernel\ControllerMetadata\ArgumentMetadata;
@@ -15,6 +16,7 @@ final class ControllerEntityArgumentResolver implements ValueResolverInterface
 {
     public function __construct(
         private readonly EntityManagerInterface $em,
+        private readonly ContainerInterface $container,
         private readonly Decorator $decorator
     ) {
     }
@@ -23,17 +25,17 @@ final class ControllerEntityArgumentResolver implements ValueResolverInterface
     {
         if ($this->supports($argument)) {
             /** @var array<int, ReflectionAttribute> $argumentAttributes */
-            $argumentAttributes = $argument->getAttributes();
+            $argumentAttributes = $argument->getAttributes($argument->getName());
             $routeParameter = $this->getRouteParameter($request, $argument);
             $entityRepository = $this->em->getRepository($argument->getType());
             $finedEntity = $entityRepository->findOneBy([$routeParameter['property'] => $routeParameter['value']]);
 
-            $this->decorator->handle($argumentAttributes, $request->attributes->get('_controller'), $finedEntity);
+            $this->decorator->handle($argumentAttributes, $this->getController($request), $finedEntity);
 
-            return $finedEntity;
+            yield $finedEntity;
+        } else {
+            return [];
         }
-
-        return [];
     }
 
     private function supports(ArgumentMetadata $argument): bool
@@ -55,5 +57,10 @@ final class ControllerEntityArgumentResolver implements ValueResolverInterface
         }
 
         throw new LogicException("In the current controller method, the {$argument->getType()} entity was passed as a dependency, but there is no route parameter for it");
+    }
+
+    private function getController(Request $request): object
+    {
+        return $this->container->get(explode('::', $request->attributes->get('_controller'), 2)[0]);
     }
 }

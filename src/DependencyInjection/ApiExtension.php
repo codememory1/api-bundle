@@ -20,6 +20,7 @@ use Doctrine\ORM\EntityManagerInterface;
 use Exception;
 use Symfony\Component\Config\FileLocator;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
+use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\DependencyInjection\Extension\Extension;
 use Symfony\Component\DependencyInjection\Loader\YamlFileLoader;
 use Symfony\Component\DependencyInjection\Reference;
@@ -179,6 +180,7 @@ final class ApiExtension extends Extension
             ->register(ControllerEntityArgumentResolver::class, ControllerEntityArgumentResolver::class)
             ->setArguments([
                 '$em' => new Reference(EntityManagerInterface::class),
+                '$container' => new Reference(ContainerInterface::class),
                 '$decorator' => new Reference(ApiBundle::DECORATOR_SERVICE_ID)
             ])
             ->addTag('controller.argument_value_resolver');
