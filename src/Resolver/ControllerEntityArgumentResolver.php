@@ -7,6 +7,7 @@ use Codememory\ApiBundle\Services\Decorator\Decorator;
 use Doctrine\ORM\EntityManagerInterface;
 use LogicException;
 use ReflectionAttribute;
+use ReflectionClass;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpKernel\Controller\ValueResolverInterface;
@@ -25,7 +26,7 @@ final class ControllerEntityArgumentResolver implements ValueResolverInterface
     {
         if ($this->supports($argument)) {
             /** @var array<int, ReflectionAttribute> $argumentAttributes */
-            $argumentAttributes = $argument->getAttributes($argument->getName());
+            $argumentAttributes = $argument->getAttributes();
             $routeParameter = $this->getRouteParameter($request, $argument);
             $entityRepository = $this->em->getRepository($argument->getType());
             $finedEntity = $entityRepository->findOneBy([$routeParameter['property'] => $routeParameter['value']]);
