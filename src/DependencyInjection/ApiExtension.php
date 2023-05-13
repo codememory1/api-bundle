@@ -180,6 +180,7 @@ final class ApiExtension extends Extension
             ->setArguments([
                 '$em' => new Reference(EntityManagerInterface::class),
                 '$decorator' => new Reference(ApiBundle::DECORATOR_SERVICE_ID)
-            ]);
+            ])
+            ->addTag('controller.argument_value_resolver');
     }
 }

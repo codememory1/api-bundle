@@ -43,7 +43,7 @@ final class ControllerEntityArgumentResolver implements ValueResolverInterface
 
     private function getRouteParameter(Request $request, ArgumentMetadata $argument): array|bool
     {
-        $entityClassName = mb_substr($argument->getName(), mb_strrpos($argument->getName(), '\\') + 1);
+        $entityClassName = mb_substr($argument->getName(), mb_strrpos($argument->getName(), '\\'));
 
         foreach ($request->attributes->get('_route_params') as $name => $value) {
             if (str_starts_with($name, lcfirst($entityClassName) . '_')) {
