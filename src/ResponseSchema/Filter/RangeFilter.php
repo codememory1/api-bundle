@@ -33,7 +33,7 @@ final class RangeFilter implements FilterInterface
         return 'range';
     }
 
-    public function getViewSettings(): array
+    public function getExtra(): array
     {
         return [
             'min' => $this->min,

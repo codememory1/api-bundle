@@ -27,7 +27,7 @@ final class FilterMeta implements MetaInterface
                 'key' => $filter->getKey(),
                 'label' => $filter->getLabel(),
                 'element' => $filter->getElement(),
-                'view_settings' => $filter->getViewSettings()
+                'extra' => $filter->getExtra()
             ];
         }, $this->filters);
     }

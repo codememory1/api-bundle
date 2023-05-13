@@ -27,7 +27,7 @@ final class InputFilter implements FilterInterface
         return 'input';
     }
 
-    public function getViewSettings(): array
+    public function getExtra(): array
     {
         return [];
     }

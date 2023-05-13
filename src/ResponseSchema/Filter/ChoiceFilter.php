@@ -30,7 +30,7 @@ final class ChoiceFilter implements FilterInterface
         return 'choice';
     }
 
-    public function getViewSettings(): array
+    public function getExtra(): array
     {
         return [
             'type' => $this->type->name,
