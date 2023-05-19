@@ -20,7 +20,7 @@ abstract class AbstractController extends SymfonyAbstractController
 
     protected function getRequestData(): array
     {
-        return json_decode($this->requestStack->getCurrentRequest()->getContent(), true);
+        return json_decode($this->requestStack->getCurrentRequest()->getContent(), true) ?: [];
     }
 
     protected function response(int $httpCode, ViewInterface $view): ResponseSchemaInterface
