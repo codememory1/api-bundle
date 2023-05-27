@@ -2,6 +2,8 @@
 
 namespace Codememory\ApiBundle\Services\QueryProcessor;
 
+use Symfony\Component\HttpFoundation\Request;
+
 final class SortQueryProcessor extends AbstractQueryProcessor
 {
     public function getKey(): string
@@ -49,5 +51,10 @@ final class SortQueryProcessor extends AbstractQueryProcessor
         }
 
         return false;
+    }
+
+    protected function getData(Request $request): array
+    {
+        return array_values($request->query->all()[$this->getKey()] ?? []);
     }
 }

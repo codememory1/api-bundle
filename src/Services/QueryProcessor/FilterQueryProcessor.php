@@ -2,6 +2,8 @@
 
 namespace Codememory\ApiBundle\Services\QueryProcessor;
 
+use Symfony\Component\HttpFoundation\Request;
+
 final class FilterQueryProcessor extends AbstractQueryProcessor
 {
     public function getKey(): string
@@ -53,5 +55,10 @@ final class FilterQueryProcessor extends AbstractQueryProcessor
     public function validateByFilter(string $key, int $flag): bool
     {
         return $this->has($key) && false !== filter_var($this->get($key), $flag);
+    }
+
+    protected function getData(Request $request): array
+    {
+        return array_values($request->query->all()[$this->getKey()] ?? []);
     }
 }
