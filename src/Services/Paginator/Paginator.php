@@ -59,7 +59,9 @@ class Paginator
 
     public function getOffsetFrom(): int
     {
-        return ($this->getCurrentPage() * $this->getLimit()) - $this->getLimit();
+        $offset = ($this->getCurrentPage() * $this->getLimit()) - $this->getLimit();
+
+        return max($offset, 0);
     }
 
     public function getLimit(): int

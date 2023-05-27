@@ -49,4 +49,9 @@ final class FilterQueryProcessor extends AbstractQueryProcessor
 
         return false;
     }
+
+    public function validateByFilter(string $key, int $flag): bool
+    {
+        return $this->has($key) && false !== filter_var($this->get($key), $flag);
+    }
 }

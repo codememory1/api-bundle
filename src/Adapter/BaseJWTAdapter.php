@@ -49,7 +49,11 @@ class BaseJWTAdapter implements JWTAdapterInterface
         }
 
         try {
-            return (array) JWT::decode($token, new Key($this->publicKey, $this->alg));
+            return json_decode(
+                json_encode(JWT::decode($token, new Key($this->publicKey, $this->alg))),
+                true,
+                flags: JSON_THROW_ON_ERROR
+            );
         } catch (Throwable) {
             return false;
         }
