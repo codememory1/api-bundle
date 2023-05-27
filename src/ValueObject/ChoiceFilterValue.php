@@ -5,14 +5,14 @@ namespace Codememory\ApiBundle\ValueObject;
 final class ChoiceFilterValue
 {
     public function __construct(
-        private readonly string $key,
+        private readonly mixed $value,
         private readonly string $label
     ) {
     }
 
-    public function getKey(): string
+    public function getValue(): mixed
     {
-        return $this->key;
+        return $this->value;
     }
 
     public function getLabel(): string

@@ -40,7 +40,7 @@ final class ChoiceFilter implements FilterInterface
             'type' => $this->type->name,
             'values' => array_map(static function (ChoiceFilterValue $value) {
                 return [
-                    'key' => $value->getKey(),
+                    'value' => $value->getValue(),
                     'label' => $value->getLabel()
                 ];
             }, $this->values)
