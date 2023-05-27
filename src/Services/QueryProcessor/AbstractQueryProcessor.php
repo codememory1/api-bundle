@@ -3,6 +3,7 @@
 namespace Codememory\ApiBundle\Services\QueryProcessor;
 
 use Codememory\ApiBundle\Validator\JsonSchema\JsonSchemaValidator;
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\RequestStack;
 
 abstract class AbstractQueryProcessor
@@ -23,7 +24,7 @@ abstract class AbstractQueryProcessor
     public function getQuery(): array
     {
         $request = $this->requestStack->getCurrentRequest();
-        $data = $request->query->all()[$this->getKey()] ?? [];
+        $data = $this->getData($request);
 
         $this->jsonSchemaValidator->validate($data, $this->getSchema());
 
@@ -58,5 +59,10 @@ abstract class AbstractQueryProcessor
     public function get(string $key, mixed $default = null): mixed
     {
         return $this->all()[$key] ?? $default;
+    }
+
+    protected function getData(Request $request): array
+    {
+        return $request->query->all()[$this->getKey()] ?? [];
     }
 }

@@ -4,9 +4,13 @@ namespace Codememory\ApiBundle\ResponseSchema\Filter;
 
 use Codememory\ApiBundle\Enum\ChoiceFilterType;
 use Codememory\ApiBundle\ResponseSchema\Interfaces\FilterInterface;
+use Codememory\ApiBundle\ValueObject\ChoiceFilterValue;
 
 final class ChoiceFilter implements FilterInterface
 {
+    /**
+     * @param array<int, ChoiceFilterValue> $values
+     */
     public function __construct(
         private readonly string $label,
         private readonly string $key,
@@ -34,7 +38,12 @@ final class ChoiceFilter implements FilterInterface
     {
         return [
             'type' => $this->type->name,
-            'values' => $this->values
+            'values' => array_map(static function (ChoiceFilterValue $value) {
+                return [
+                    'value' => $value->getValue(),
+                    'label' => $value->getLabel()
+                ];
+            }, $this->values)
         ];
     }
 }
