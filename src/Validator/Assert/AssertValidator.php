@@ -15,6 +15,11 @@ final class AssertValidator
     ) {
     }
 
+    public function isValidated(object $object): bool
+    {
+        return count($this->validator->validate($object)) < 1;
+    }
+
     /**
      * @throws HttpException
      */
