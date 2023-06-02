@@ -19,7 +19,9 @@ abstract class AbstractController
 
     protected function getRequestData(): array
     {
-        return json_decode($this->requestStack->getCurrentRequest()->getContent(), true) ?: [];
+        $data = json_decode($this->requestStack->getCurrentRequest()->getContent(), true) ?: [];
+
+        return array_merge($data, $this->requestStack->getCurrentRequest()->request->all());
     }
 
     protected function response(int $httpCode, ViewInterface $view): ResponseSchemaInterface
