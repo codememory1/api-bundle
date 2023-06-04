@@ -84,7 +84,7 @@ final class Process
 
     public function completeByMemory(): void
     {
-        if (memory_get_usage() / 1024 / 1024 > $this->options->getMaxMemoryUsage()) {
+        if (memory_get_usage() / 1024 / 1024 > $this->options->getMaxMemoryUsage() / 1024 / 1024) {
             $this->sendSignal(SIGCHLD);
         }
     }

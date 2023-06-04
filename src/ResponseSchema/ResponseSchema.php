@@ -10,7 +10,7 @@ class ResponseSchema implements ResponseSchemaInterface
 {
     private int $httpCode = 200;
     private array $headers = [];
-    private int $platformCode = 0;
+    private int $platformCode = -1;
     private ?ViewInterface $view = null;
     private array $meta = [];
 

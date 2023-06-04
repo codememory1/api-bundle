@@ -6,7 +6,7 @@ final class ProcessOptions
 {
     public function __construct(
         private int $delayBetweenIterationCallbackLogicCall = 100, // 100ms
-        private int $maxMemoryUsage = 100 // 100MB
+        private int $maxMemoryUsage = 100 * (1024 * 1024) // 100MB
     ) {
     }
 
