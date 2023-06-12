@@ -15,10 +15,16 @@ trait RemovedAtTrait
         return $this->removedAt;
     }
 
-    #[ORM\PreRemove]
     public function setRemovedAt(): self
     {
         $this->removedAt = new DateTimeImmutable();
+
+        return $this;
+    }
+
+    public function undoRemovedAt(): self
+    {
+        $this->removedAt = null;
 
         return $this;
     }
