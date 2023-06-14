@@ -57,6 +57,11 @@ final class FilterQueryProcessor extends AbstractQueryProcessor
         return $this->has($key) && false !== filter_var($this->get($key), $flag);
     }
 
+    public function validateByRegexp(string $key, string $pattern): bool
+    {
+        return $this->has($key) && 1 === preg_match($pattern, $this->get($key));
+    }
+
     protected function getData(Request $request): array
     {
         return array_values($request->query->all()[$this->getKey()] ?? []);

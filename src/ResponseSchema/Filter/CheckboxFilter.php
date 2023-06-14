@@ -8,7 +8,9 @@ final class CheckboxFilter implements FilterInterface
 {
     public function __construct(
         private readonly string $label,
-        private readonly string $key
+        private readonly string $key,
+        private readonly mixed $disableValue = 'false',
+        private readonly mixed $enableValue = 'true'
     ) {
     }
 
@@ -29,6 +31,9 @@ final class CheckboxFilter implements FilterInterface
 
     public function getExtra(): array
     {
-        return [];
+        return [
+            'disable_value' => $this->disableValue,
+            'enable_value' => $this->enableValue
+        ];
     }
 }
