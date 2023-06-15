@@ -18,7 +18,8 @@ final class Process
     private array $signalHandlers = [];
 
     public function __construct(
-        public readonly ProcessOptions $options
+        public readonly ProcessOptions $options,
+        public readonly int $number
     ) {
         $this->id = Uuid::uuid4()->toString();
 

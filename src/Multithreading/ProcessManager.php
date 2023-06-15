@@ -39,9 +39,9 @@ class ProcessManager
 
     public function add(callable $callback): self
     {
-        $process = new Process($this->processOptions);
+        $process = new Process($this->processOptions, count($this->processes) + 1);
 
-        call_user_func($callback, $process, count($this->processes) + 1);
+        call_user_func($callback, $process);
 
         $this->processes[] = $process;
 
