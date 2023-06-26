@@ -21,14 +21,14 @@ abstract class AbstractRepository extends ServiceEntityRepository
         return $this->createQueryBuilder($this->alias, $indexBy);
     }
 
-    protected function generateQueryByProcess(int $numberProcess, int $numberProcesses): QueryBuilder
+    protected function generateQueryByProcess(int $processNumber, int $numberProcesses): QueryBuilder
     {
         $qb = $this->createQB();
         $count = $this->count([]);
 
         $qb
-            ->setFirstResult(floor(($numberProcess - 1) * ($count / $numberProcesses)))
-            ->setMaxResults(ceil($numberProcess * ($count / $numberProcesses)));
+            ->setFirstResult(($processNumber - 1) * ceil($count / $numberProcesses))
+            ->setMaxResults(ceil($count / $numberProcesses));
 
         return $qb;
     }
