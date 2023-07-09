@@ -22,5 +22,5 @@ services:
   Codememory\ApiBundle\Constraints\Dto\AsPatchHandler:
     arguments:
       $requestStack: '@Symfony\Component\HttpFoundation\RequestStack'
-      tags:
-        - { name: codememory.dto.constraint }
+    tags:
+      - { name: codememory.dto.constraint }
