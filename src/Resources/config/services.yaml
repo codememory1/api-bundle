@@ -18,3 +18,9 @@ services:
   Codememory\ApiBundle\Command\OpenSSLKeyCommand:
     tags:
       - { name: console.command, command: 'codememory:openssl:generate-key' }
+
+  Codememory\ApiBundle\Constraints\Dto\AsPatchHandler:
+    arguments:
+      $requestStack: '@Symfony\Component\HttpFoundation\RequestStack'
+    tags:
+      - { name: codememory.dto.constraint }

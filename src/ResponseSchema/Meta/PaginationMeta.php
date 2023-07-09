@@ -22,7 +22,8 @@ final class PaginationMeta implements MetaInterface
         return [
             'total_pages' => $this->paginator->getTotalPages(),
             'current_page' => $this->paginator->getCurrentPage(),
-            'limit' => $this->paginator->getLimit()
+            'limit' => $this->paginator->getLimit(),
+            'total_records' => $this->paginator->getPaginator()->count()
         ];
     }
 }
