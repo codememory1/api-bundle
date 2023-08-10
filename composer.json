@@ -21,8 +21,8 @@
         "symfony/http-foundation": "6.2.*",
         "symfony/validator": "6.2.*",
         "doctrine/doctrine-bundle": "*",
-        "codememory/dto": "3.1",
-        "codememory/entity-response-control": "2.1",
+        "codememory/dto": "4.0",
+        "codememory/entity-response-control": "3.0",
         "ramsey/uuid": "^4.7.3",
         "justinrainbow/json-schema": "^5.2",
         "firebase/php-jwt": "^6.4"
