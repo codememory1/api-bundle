@@ -1,6 +1,6 @@
 <?php
 
-namespace Codememory\ApiBundle\Enum;
+namespace Codememory\ApiBundle\ResponseSchema\Enum;
 
 enum ChoiceFilterType
 {

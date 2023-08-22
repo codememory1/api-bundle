@@ -5,10 +5,10 @@ namespace Codememory\ApiBundle\Multithreading;
 use function call_user_func;
 use Throwable;
 
-final class Fork
+final readonly class Fork
 {
     public function __construct(
-        private readonly Process $process
+        private Process $process
     ) {
     }
 

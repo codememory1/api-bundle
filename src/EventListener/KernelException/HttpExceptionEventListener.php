@@ -3,8 +3,9 @@
 namespace Codememory\ApiBundle\EventListener\KernelException;
 
 use Codememory\ApiBundle\Exceptions\HttpException;
+use Codememory\ApiBundle\HttpErrorHandler\Interfaces\HttpErrorHandlerConfigurationInterface;
+use Codememory\ApiBundle\ResponseSchema\Interfaces\ResponseSchemaFactoryInterface;
 use Codememory\ApiBundle\ResponseSchema\Interfaces\ResponseSchemaInterface;
-use Codememory\ApiBundle\ResponseSchema\ResponseSchema;
 use Codememory\ApiBundle\ResponseSchema\View\MessageView;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpKernel\Event\ExceptionEvent;
@@ -12,11 +13,12 @@ use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 use Symfony\Component\HttpKernel\Exception\MethodNotAllowedHttpException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
-final class HttpExceptionEventListener
+final readonly class HttpExceptionEventListener
 {
     public function __construct(
-        private readonly string $env,
-        private readonly array $httpErrorHandlerConfig
+        private HttpErrorHandlerConfigurationInterface $configuration,
+        private ResponseSchemaFactoryInterface $responseSchemaFactory,
+        private string $env,
     ) {
     }
 
@@ -25,7 +27,7 @@ final class HttpExceptionEventListener
         $exception = $event->getThrowable();
 
         if (PHP_SAPI !== 'cli') {
-            $responseSchema = new ResponseSchema();
+            $responseSchema = $this->responseSchemaFactory->createResponseSchema();
 
             if ($exception instanceof HttpException) {
                 $responseSchema->setHttpCode($exception->httpCode);
@@ -35,27 +37,27 @@ final class HttpExceptionEventListener
                 $this->jsonResponse($responseSchema);
             } else if ($exception instanceof NotFoundHttpException) {
                 $responseSchema->setHttpCode(404);
-                $responseSchema->setPlatformCode($this->httpErrorHandlerConfig[404]['platform_code']);
-                $responseSchema->setView(new MessageView($this->httpErrorHandlerConfig[404]['message'], true));
+                $responseSchema->setPlatformCode($this->configuration->getNotFoundPlatformCode());
+                $responseSchema->setView(new MessageView($this->configuration->getNotFoundMessage(), true));
 
                 $this->jsonResponse($responseSchema);
             } else if ($exception instanceof MethodNotAllowedHttpException) {
                 $responseSchema->setHttpCode(405);
-                $responseSchema->setPlatformCode($this->httpErrorHandlerConfig[405]['platform_code']);
-                $responseSchema->setView(new MessageView($this->httpErrorHandlerConfig[405]['message'], true));
+                $responseSchema->setPlatformCode($this->configuration->getMethodNotAllowedPlatformCode());
+                $responseSchema->setView(new MessageView($this->configuration->getMethodNotAllowedMessage(), true));
 
                 $this->jsonResponse($responseSchema);
             } else if ($exception instanceof AccessDeniedHttpException) {
                 $responseSchema->setHttpCode(403);
-                $responseSchema->setPlatformCode($this->httpErrorHandlerConfig[403]['platform_code']);
-                $responseSchema->setView(new MessageView($this->httpErrorHandlerConfig[403]['message'], true));
+                $responseSchema->setPlatformCode($this->configuration->getAccessIsDeniedPlatformCode());
+                $responseSchema->setView(new MessageView($this->configuration->getAccessIsDeniedMessage(), true));
 
                 $this->jsonResponse($responseSchema);
             } else {
                 if ($this->env !== 'dev') {
                     $responseSchema->setHttpCode(500);
-                    $responseSchema->setPlatformCode($this->httpErrorHandlerConfig[500]['platform_code']);
-                    $responseSchema->setView(new MessageView($this->httpErrorHandlerConfig[500]['message'], true));
+                    $responseSchema->setPlatformCode($this->configuration->getServerErrorPlatformCode());
+                    $responseSchema->setView(new MessageView($this->configuration->getServerErrorMessage(), true));
 
                     $this->jsonResponse($responseSchema);
                 }

@@ -13,12 +13,12 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpKernel\Controller\ValueResolverInterface;
 use Symfony\Component\HttpKernel\ControllerMetadata\ArgumentMetadata;
 
-final class ControllerEntityArgumentResolver implements ValueResolverInterface
+final readonly class ControllerEntityArgumentResolver implements ValueResolverInterface
 {
     public function __construct(
-        private readonly EntityManagerInterface $em,
-        private readonly ContainerInterface $container,
-        private readonly Decorator $decorator
+        private EntityManagerInterface $em,
+        private ContainerInterface $container,
+        private Decorator $decorator
     ) {
     }
 

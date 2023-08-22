@@ -1,40 +1,40 @@
 <?php
 
-namespace Codememory\ApiBundle\Services\Paginator;
+namespace Codememory\ApiBundle\Paginator;
 
-use Codememory\ApiBundle\Services\Paginator\Interfaces\PaginatorOptionsInterface;
+use Codememory\ApiBundle\Paginator\Interfaces\PaginatorInterface;
+use Codememory\ApiBundle\Paginator\Interfaces\PaginatorOptionsInterface;
 use Doctrine\ORM\Query;
-use Doctrine\ORM\Tools\Pagination\Paginator as DoctrinePaginator;
+use Doctrine\ORM\Tools\Pagination\Paginator;
 use LogicException;
 
-class Paginator
+final class DoctrinePaginator implements PaginatorInterface
 {
     private ?Query $query = null;
-    private ?DoctrinePaginator $paginator = null;
+    private ?Paginator $paginator = null;
 
     public function __construct(
         private readonly PaginatorOptionsInterface $options
     ) {
     }
 
-    public function setQuery(Query $query): self
+    /**
+     * @param Query $query
+     */
+    public function setQuery(mixed $query): PaginatorInterface
     {
+        if (!($query instanceof Query)) {
+            throw new LogicException(sprintf('The %s method in the %s class expects the type argument %s', __METHOD__, self::class, Query::class));
+        }
+
         $this->query = $query;
 
         return $this;
     }
 
-    public function getPaginator(): DoctrinePaginator
+    public function getTotalRecords(): int
     {
-        if (null === $this->paginator) {
-            if (null === $this->query) {
-                throw new LogicException(sprintf('Paginator expects Query call setQuery method on %s', self::class));
-            }
-
-            $this->paginator = new DoctrinePaginator($this->query);
-        }
-
-        return $this->paginator;
+        return $this->getPaginator()->count();
     }
 
     public function getTotalPages(): int
@@ -72,8 +72,8 @@ class Paginator
             return 1;
         }
 
-        if ($limitFromQuery > $this->options->getMaxLimit()) {
-            return $this->options->getMaxLimit();
+        if ($limitFromQuery > $this->options->getConfiguration()->getMaxLimit()) {
+            return $this->options->getConfiguration()->getMaxLimit();
         }
 
         return $limitFromQuery;
@@ -85,5 +85,14 @@ class Paginator
             ->setFirstResult($this->getOffsetFrom())
             ->setMaxResults($this->getLimit())
             ->getResult();
+    }
+
+    private function getPaginator(): Paginator
+    {
+        if (null === $this->paginator) {
+            $this->paginator = new Paginator($this->query);
+        }
+
+        return $this->paginator;
     }
 }

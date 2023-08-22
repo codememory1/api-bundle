@@ -3,12 +3,12 @@
 namespace Codememory\ApiBundle\ResponseSchema\Meta;
 
 use Codememory\ApiBundle\ResponseSchema\Interfaces\MetaInterface;
-use Codememory\ApiBundle\Services\Paginator\Paginator;
+use Codememory\ApiBundle\Paginator\Interfaces\PaginatorInterface;
 
-final class PaginationMeta implements MetaInterface
+final readonly class PaginationMeta implements MetaInterface
 {
     public function __construct(
-        private readonly Paginator $paginator
+        private PaginatorInterface $paginator
     ) {
     }
 
@@ -23,7 +23,7 @@ final class PaginationMeta implements MetaInterface
             'total_pages' => $this->paginator->getTotalPages(),
             'current_page' => $this->paginator->getCurrentPage(),
             'limit' => $this->paginator->getLimit(),
-            'total_records' => $this->paginator->getPaginator()->count()
+            'total_records' => $this->paginator->getTotalRecords()
         ];
     }
 }

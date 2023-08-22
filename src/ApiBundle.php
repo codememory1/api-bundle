@@ -7,6 +7,8 @@ use Codememory\ApiBundle\DependencyInjection\Compiler\AddJWTAdapterPass;
 use Codememory\ApiBundle\DependencyInjection\Compiler\RegisterDecoratorPass;
 use Codememory\ApiBundle\DependencyInjection\Compiler\RegisterDTODecoratorPass;
 use Codememory\ApiBundle\DependencyInjection\Compiler\RegisterDTOObjectPass;
+use Codememory\ApiBundle\DependencyInjection\Compiler\RegisterERCDecoratorPass;
+use Codememory\ApiBundle\DependencyInjection\Compiler\RegisterERCObjectPass;
 use JetBrains\PhpStorm\Pure;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Extension\ExtensionInterface;
@@ -38,27 +40,38 @@ final class ApiBundle extends Bundle
     public const DTO_DECORATOR_HANDLER_REGISTRAR_PARAMETER = 'codememory.dto.decorator_handler_registrar';
 
     // EntityResponseControl Services
-    public const ERC_DEFAULT_COLLECTOR_SERVICE = 'codememory.entity_response_control.default_collector';
-    public const ERC_DEFAULT_CONFIGURATION_FACTORY_SERVICE = 'codememory.entity_response_control.default_configuration_factory';
-    public const ERC_DEFAULT_EXECUTION_CONTEXT_FACTORY_SERVICE = 'codememory.entity_response_control.default_execution_context_factory';
-    public const ERC_DEFAULT_DECORATOR_HANDLER_REGISTRAR_SERVICE = 'codememory.entity_response_control.default_decorator_handler_registrar';
-    public const ERC_DEFAULT_RESPONSE_KEY_NAMING_STRATEGY_SERVICE = 'codememory.entity_response_control.default_response_key_naming_strategy';
-    public const ERC_DEFAULT_PROPERTY_PROVIDER_SERVICE = 'codememory.entity_response_control.default_property_provider';
-    public const ERC_DEFAULT_CACHE_ADAPTER_SERVICE = 'codememory.entity_response_control.default_cache_adapter';
-    public const ERC_REFLECTOR_MANAGER_SERVICE = 'codememory.entity_response_control.reflector_manager';
+    public const ERC_DEFAULT_COLLECTOR_SERVICE = 'codememory.erc.default_collector';
+    public const ERC_DEFAULT_CONFIGURATION_FACTORY_SERVICE = 'codememory.erc.default_configuration_factory';
+    public const ERC_DEFAULT_EXECUTION_CONTEXT_FACTORY_SERVICE = 'codememory.erc.default_execution_context_factory';
+    public const ERC_DEFAULT_DECORATOR_HANDLER_REGISTRAR_SERVICE = 'codememory.erc.default_decorator_handler_registrar';
+    public const ERC_DEFAULT_RESPONSE_KEY_NAMING_STRATEGY_SERVICE = 'codememory.erc.default_response_key_naming_strategy';
+    public const ERC_DEFAULT_PROPERTY_PROVIDER_SERVICE = 'codememory.erc.default_property_provider';
+    public const ERC_DEFAULT_CACHE_ADAPTER_SERVICE = 'codememory.erc.default_cache_adapter';
+    public const ERC_REFLECTOR_MANAGER_SERVICE = 'codememory.erc.reflector_manager';
 
     // EntityResponseControl Tags
-    public const ERC_PROTOTYPE_TAG = 'codememory.entity_response_control.prototype';
-    public const ERC_DECORATOR_TAG = 'codememory.entity_response_control.decorator';
+    public const ERC_PROTOTYPE_TAG = 'codememory.erc.prototype';
+    public const ERC_DECORATOR_TAG = 'codememory.erc.decorator';
 
     // EntityResponseControl Parameters
-    public const ERC_COLLECTOR_PARAMETER = 'codememory.entity_response_control.collector';
-    public const ERC_CONFIGURATION_FACTORY_PARAMETER = 'codememory.entity_response_control.configuration_factory';
-    public const ERC_EXECUTION_CONTEXT_FACTORY_PARAMETER = 'codememory.entity_response_control.execution_context_factory';
-    public const ERC_CACHE_PARAMETER = 'codememory.entity_response_control.cache';
-    public const ERC_RESPONSE_KEY_NAMING_STRATEGY_PARAMETER = 'codememory.entity_response_control.response_key_naming_strategy';
-    public const ERC_PROPERTY_PROVIDER_PARAMETER = 'codememory.entity_response_control.property_provider';
-    public const ERC_DECORATOR_HANDLER_REGISTRAR_PARAMETER = 'codememory.entity_response_control.decorator_handler_registrar';
+    public const ERC_COLLECTOR_PARAMETER = 'codememory.erc.collector';
+    public const ERC_CONFIGURATION_FACTORY_PARAMETER = 'codememory.erc.configuration_factory';
+    public const ERC_EXECUTION_CONTEXT_FACTORY_PARAMETER = 'codememory.erc.execution_context_factory';
+    public const ERC_CACHE_PARAMETER = 'codememory.erc.cache';
+    public const ERC_RESPONSE_KEY_NAMING_STRATEGY_PARAMETER = 'codememory.erc.response_key_naming_strategy';
+    public const ERC_PROPERTY_PROVIDER_PARAMETER = 'codememory.erc.property_provider';
+    public const ERC_DECORATOR_HANDLER_REGISTRAR_PARAMETER = 'codememory.erc.decorator_handler_registrar';
+
+    // Paginator Services
+    public const PAGINATION_DEFAULT_CONFIGURATION_SERVICE = 'codememory.pagination.default_configuration';
+    public const PAGINATION_DEFAULT_OPTIONS_SERVICE = 'codememory.pagination.default_options';
+    public const PAGINATION_DEFAULT_PAGINATOR = 'codememory.pagination.default_paginator';
+
+    // HTTP Error Handler
+    public const HTTP_ERROR_HANDLER_DEFAULT_CONFIGURATION = 'codememory.http_error_handler.default_configuration';
+
+    // Response Schema
+    public const RESPONSE_SCHEMA_DEFAULT_FACTORY = 'codememory.response_schema.factory';
 
     // Others
     public const WORKER_OPTIONS_SERVICE_ID = 'codememory.multithreading.worker_options';
@@ -66,9 +79,6 @@ final class ApiBundle extends Bundle
     public const PROCESS_MANAGER_SERVICE_ID = 'codememory.multithreading.process_manager';
     public const JSON_SCHEMA_VALIDATOR_SERVICE_ID = 'codememory.validator.json';
     public const ASSERT_VALIDATOR_SERVICE_ID = 'codememory.validator.assert';
-    public const PAGINATION_DEFAULT_OPTIONS_SERVICE_ID = 'codememory.pagination.default_options';
-    public const PAGINATION_MIN_LIMIT_PARAMETER = 'codememory.pagination.min_limit';
-    public const PAGINATION_MAX_LIMIT_PARAMETER = 'codememory.pagination.max_limit';
     public const DECORATOR_SERVICE_ID = 'codememory.decorator';
     public const DECORATOR_HANDLER_TAG = 'codememory.decorator.handler';
     public const JWT_ADAPTER_TAG = 'codememory.jwt.adapter';
@@ -79,6 +89,8 @@ final class ApiBundle extends Bundle
 
         $container->addCompilerPass(new RegisterDTODecoratorPass());
         $container->addCompilerPass(new RegisterDTOObjectPass());
+        $container->addCompilerPass(new RegisterERCDecoratorPass());
+        $container->addCompilerPass(new RegisterERCObjectPass());
         $container->addCompilerPass(new RegisterDecoratorPass());
         $container->addCompilerPass(new AddJWTAdapterPass());
     }

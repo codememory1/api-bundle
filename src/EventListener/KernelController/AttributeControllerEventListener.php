@@ -8,10 +8,10 @@ use ReflectionClass;
 use ReflectionException;
 use Symfony\Component\HttpKernel\Event\ControllerEvent;
 
-final class AttributeControllerEventListener
+final readonly class AttributeControllerEventListener
 {
     public function __construct(
-        private readonly Decorator $decorator
+        private Decorator $decorator
     ) {
     }
 

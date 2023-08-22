@@ -6,11 +6,11 @@ use Attribute;
 use Codememory\ApiBundle\Services\Decorator\Interfaces\DecoratorInterface;
 
 #[Attribute(Attribute::TARGET_PARAMETER)]
-final class EntityNotFound implements DecoratorInterface
+final readonly class EntityNotFound implements DecoratorInterface
 {
     public function __construct(
-        public readonly string $exceptionClass,
-        public readonly string $method
+        public string $exceptionClass,
+        public string $method
     ) {
     }
 

@@ -1,6 +1,7 @@
 services:
   Symfony\Component\DependencyInjection\ContainerInterface: '@service_container'
 
+  # Event Listeners
   Codememory\ApiBundle\EventListener\KernelControllerViewEventListener:
     tags:
       - { name: kernel.event_listener, event: kernel.view, method: onKernelView }
@@ -11,10 +12,32 @@ services:
     tags:
       - { name: kernel.event_listener, event: kernel.controller, method: onKernelController }
 
+  # Decorators
   Codememory\ApiBundle\Decorator\ControllerEntityArgument\EntityNotFoundHandler:
     tags:
       - { name: codememory.decorator.handler }
-        
+
+  Codememory\ApiBundle\Decorator\DTO\HttpPatchHandler:
+    autowire: true
+    tags:
+      - { name: codememory.dto.decorator }
+
+  Codememory\ApiBundle\Decorator\DTO\ToEntityHandler:
+    autowire: true
+    tags:
+      - { name: codememory.dto.decorator }
+
+  Codememory\ApiBundle\Decorator\DTO\ToListEntitiesHandler:
+    autowire: true
+    tags:
+      - { name: codememory.dto.decorator }
+
+  Codememory\ApiBundle\Decorator\ERC\CallbackWithEntityRepositoryHandler:
+    autowire: true
+    tags:
+      - { name: codememory.erc.decorator }
+
+  # Commands
   Codememory\ApiBundle\Command\OpenSSLKeyCommand:
     tags:
       - { name: console.command, command: 'codememory:openssl:generate-key' }

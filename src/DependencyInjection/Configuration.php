@@ -19,6 +19,7 @@ final class Configuration implements ConfigurationInterface
         $this->addAssertSection($rootNode);
         $this->addPaginationSection($rootNode);
         $this->addThreadingSection($rootNode);
+        $this->addResponseSchemaSection($rootNode);
         $this->addHttpErrorHandlerSection($rootNode);
 
         return $builder;
@@ -96,7 +97,7 @@ final class Configuration implements ConfigurationInterface
     {
         $node
             ->children()
-                ->arrayNode('entity_response_control')
+                ->arrayNode('erc')
                     ->addDefaultsIfNotSet()
                     ->children()
                         ->arrayNode('collector')
@@ -187,17 +188,26 @@ final class Configuration implements ConfigurationInterface
                 ->arrayNode('pagination')
                     ->addDefaultsIfNotSet()
                     ->children()
+                        ->scalarNode('paginator_service')
+                            ->cannotBeEmpty()
+                            ->defaultValue(ApiBundle::PAGINATION_DEFAULT_PAGINATOR)
+                            ->info('Paginator service')
+                        ->end()
                         ->scalarNode('options_service')
                             ->cannotBeEmpty()
-                            ->defaultValue(ApiBundle::PAGINATION_DEFAULT_OPTIONS_SERVICE_ID)
-                            ->info('pagination options service ID')
+                            ->defaultValue(ApiBundle::PAGINATION_DEFAULT_OPTIONS_SERVICE)
+                            ->info('pagination options Service ID')
+                        ->end()
+                        ->scalarNode('configuration_service')
+                            ->defaultValue(ApiBundle::PAGINATION_DEFAULT_CONFIGURATION_SERVICE)
+                            ->info('Default Configuration Service ID')
                         ->end()
                         ->integerNode('min_limit')
-                            ->defaultValue(10)
+                            ->defaultValue(1)
                             ->info('The minimum limit in pagination, if the value is specified less than the current one or not specified at all')
                         ->end()
                         ->integerNode('max_limit')
-                            ->defaultValue(50)
+                            ->defaultValue(100)
                             ->info('The maximum pagination limit, if more than the maximum is specified, then the limit will be the maximum number')
                         ->end()
                     ->end()
@@ -239,6 +249,23 @@ final class Configuration implements ConfigurationInterface
             ->end();
     }
 
+    private function addResponseSchemaSection(ArrayNodeDefinition $node): void
+    {
+        $node
+            ->children()
+                ->arrayNode('response_schema')
+                    ->addDefaultsIfNotSet()
+                    ->children()
+                        ->scalarNode('factory_service')
+                            ->cannotBeEmpty()
+                            ->defaultValue(ApiBundle::RESPONSE_SCHEMA_DEFAULT_FACTORY)
+                            ->info('Response Schema Factory')
+                        ->end()
+                    ->end()
+                ->end()
+            ->end();
+    }
+
     private function addHttpErrorHandlerSection(ArrayNodeDefinition $node): void
     {
         $node
@@ -246,6 +273,11 @@ final class Configuration implements ConfigurationInterface
                 ->arrayNode('http_error_handler')
                     ->addDefaultsIfNotSet()
                     ->children()
+                        ->scalarNode('configuration_service')
+                            ->cannotBeEmpty()
+                            ->defaultValue(ApiBundle::HTTP_ERROR_HANDLER_DEFAULT_CONFIGURATION)
+                            ->info('Configuration service for complete redefinition of codes')
+                        ->end()
                         ->arrayNode('403')
                             ->children()
                                 ->scalarNode('message')

@@ -2,20 +2,20 @@
 
 namespace Codememory\ApiBundle\ResponseSchema\Filter;
 
-use Codememory\ApiBundle\Enum\ChoiceFilterType;
+use Codememory\ApiBundle\ResponseSchema\Enum\ChoiceFilterType;
 use Codememory\ApiBundle\ResponseSchema\Interfaces\FilterInterface;
 use Codememory\ApiBundle\ValueObject\ChoiceFilterValue;
 
-final class ChoiceFilter implements FilterInterface
+final readonly class ChoiceFilter implements FilterInterface
 {
     /**
      * @param array<int, ChoiceFilterValue> $values
      */
     public function __construct(
-        private readonly string $label,
-        private readonly string $key,
-        private readonly ChoiceFilterType $type = ChoiceFilterType::SINGLE,
-        private readonly array $values = []
+        private string $label,
+        private string $key,
+        private ChoiceFilterType $type = ChoiceFilterType::SINGLE,
+        private array $values = []
     ) {
     }
 

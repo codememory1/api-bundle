@@ -4,14 +4,14 @@ namespace Codememory\ApiBundle\ResponseSchema\Filter;
 
 use Codememory\ApiBundle\ResponseSchema\Interfaces\FilterInterface;
 
-final class RangeFilter implements FilterInterface
+final readonly class RangeFilter implements FilterInterface
 {
     public function __construct(
-        private readonly string $label,
-        private readonly string $fromKey,
-        private readonly string $toKey,
-        private readonly int|float $min = 0,
-        private readonly int|float|null $max = null
+        private string $label,
+        private string $fromKey,
+        private string $toKey,
+        private int|float $min = 0,
+        private int|float|null $max = null
     ) {
     }
 
