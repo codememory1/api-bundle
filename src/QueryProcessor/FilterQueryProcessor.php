@@ -1,11 +1,16 @@
 <?php
 
-namespace Codememory\ApiBundle\Services\QueryProcessor;
+namespace Codememory\ApiBundle\QueryProcessor;
 
 use Symfony\Component\HttpFoundation\Request;
 
 final class FilterQueryProcessor extends AbstractQueryProcessor
 {
+    protected function getData(Request $request): array
+    {
+        return array_values($request->query->all()[$this->getKey()] ?? []);
+    }
+
     public function getKey(): string
     {
         return 'filter';
@@ -60,10 +65,5 @@ final class FilterQueryProcessor extends AbstractQueryProcessor
     public function validateByRegexp(string $key, string $pattern): bool
     {
         return $this->has($key) && 1 === preg_match($pattern, $this->get($key));
-    }
-
-    protected function getData(Request $request): array
-    {
-        return array_values($request->query->all()[$this->getKey()] ?? []);
     }
 }

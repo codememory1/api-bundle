@@ -3,7 +3,10 @@
 namespace Codememory\ApiBundle\DependencyInjection;
 
 use Codememory\ApiBundle\ApiBundle;
+use Codememory\ApiBundle\AttributeHandler\AttributeHandler;
+use Codememory\ApiBundle\AttributeHandler\Interfaces\AttributeHandlerInterface;
 use Codememory\ApiBundle\EventListener\KernelException\HttpExceptionEventListener;
+use Codememory\ApiBundle\Factory\DTOConfigurationFactory;
 use Codememory\ApiBundle\Factory\ERCConfigurationFactory;
 use Codememory\ApiBundle\Factory\ResponseSchemaFactory;
 use Codememory\ApiBundle\HttpErrorHandler\HttpErrorHandlerConfiguration;
@@ -17,16 +20,24 @@ use Codememory\ApiBundle\Paginator\Interfaces\PaginatorInterface;
 use Codememory\ApiBundle\Paginator\Interfaces\PaginatorOptionsInterface;
 use Codememory\ApiBundle\Paginator\PaginatorConfiguration;
 use Codememory\ApiBundle\Paginator\PaginatorOptions;
+use Codememory\ApiBundle\QueryProcessor\FilterQueryProcessor;
+use Codememory\ApiBundle\QueryProcessor\PaginationQueryProcessor;
+use Codememory\ApiBundle\QueryProcessor\SortQueryProcessor;
 use Codememory\ApiBundle\Resolver\ControllerEntityArgumentResolver;
 use Codememory\ApiBundle\ResponseSchema\Interfaces\ResponseSchemaFactoryInterface;
-use Codememory\ApiBundle\Services\QueryProcessor\FilterQueryProcessor;
-use Codememory\ApiBundle\Services\QueryProcessor\PaginationQueryProcessor;
-use Codememory\ApiBundle\Services\QueryProcessor\SortQueryProcessor;
 use Codememory\ApiBundle\Validator\Assert\AssertValidator;
+use Codememory\ApiBundle\Validator\Assert\Interfaces\AssertValidatorInterface;
 use Codememory\ApiBundle\Validator\JsonSchema\JsonSchemaValidator;
+use Codememory\Dto\Collectors\BaseCollector as DTOBaseCollector;
 use Codememory\Dto\DataKeyNamingStrategy\DataKeyNamingStrategySnakeCase;
 use Codememory\Dto\DecoratorHandlerRegistrar;
+use Codememory\Dto\Factory\ExecutionContextFactory as DTOExecutionContextFactory;
 use Codememory\Dto\Provider\DataTransferObjectPublicPropertyProvider;
+use Codememory\EntityResponseControl\Collectors\BaseCollector as ERCCollector;
+use Codememory\EntityResponseControl\DecoratorHandlerRegistrar as ERCDecoratorHandlerRegistrar;
+use Codememory\EntityResponseControl\Factory\ExecutionContextFactory as ERCContextFactory;
+use Codememory\EntityResponseControl\Provider\ResponsePrototypePrivatePropertyProvider;
+use Codememory\EntityResponseControl\ResponseKeyNamingStrategy\ResponseKeyNamingStrategySnakeCase;
 use Codememory\Reflection\ReflectorManager;
 use Doctrine\ORM\EntityManagerInterface;
 use Exception;
@@ -39,14 +50,6 @@ use Symfony\Component\DependencyInjection\Loader\YamlFileLoader;
 use Symfony\Component\DependencyInjection\Reference;
 use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
-use Codememory\Dto\Collectors\BaseCollector as DTOBaseCollector;
-use Codememory\ApiBundle\Factory\DTOConfigurationFactory;
-use Codememory\Dto\Factory\ExecutionContextFactory as DTOExecutionContextFactory;
-use Codememory\EntityResponseControl\Collectors\BaseCollector as ERCCollector;
-use Codememory\EntityResponseControl\Factory\ExecutionContextFactory as ERCContextFactory;
-use Codememory\EntityResponseControl\ResponseKeyNamingStrategy\ResponseKeyNamingStrategySnakeCase;
-use Codememory\EntityResponseControl\Provider\ResponsePrototypePrivatePropertyProvider;
-use Codememory\EntityResponseControl\DecoratorHandlerRegistrar as ERCDecoratorHandlerRegistrar;
 
 final class ApiExtension extends Extension
 {
@@ -76,12 +79,15 @@ final class ApiExtension extends Extension
 
         $this->registerHttpErrorHandler($config['http_error_handler'], $container);
 
+        $this->registerAssertServices($config['assert'], $container);
+
         $this->registerWorkerOptions($config['threading']['worker_options'], $container);
         $this->registerProcessOptions($config['threading']['process_options'], $container);
 
+        $this->registerAttributeHandler($container);
+
         $this->registerProcessManager($container);
         $this->registerJsonSchemaValidator($container);
-        $this->registerAssertValidator($config['assert'], $container);
         $this->registerQueryProcessors($container);
         $this->registerPaginator($config['pagination'], $container);
         $this->registerResolver($container);
@@ -157,6 +163,15 @@ final class ApiExtension extends Extension
         $container->setParameter(ApiBundle::ERC_DECORATOR_HANDLER_REGISTRAR_PARAMETER, $config['decorator_handler_registrar']['service']);
     }
 
+    private function registerAssertServices(array $config, ContainerBuilder $container): void
+    {
+        $container
+            ->register(ApiBundle::ASSERT_DEFAULT_VALIDATOR_SERVICE, AssertValidator::class)
+            ->setArgument('$validator', new Reference(ValidatorInterface::class));
+
+        $container->setAlias(AssertValidatorInterface::class, $config['validator']['service']);
+    }
+
     private function registerWorkerOptions(array $options, ContainerBuilder $container): void
     {
         $container
@@ -197,18 +212,6 @@ final class ApiExtension extends Extension
         $container->register(ApiBundle::JSON_SCHEMA_VALIDATOR_SERVICE_ID, JsonSchemaValidator::class);
 
         $container->setAlias(JsonSchemaValidator::class, ApiBundle::JSON_SCHEMA_VALIDATOR_SERVICE_ID);
-    }
-
-    private function registerAssertValidator(array $config, ContainerBuilder $container): void
-    {
-        $container
-            ->register(ApiBundle::ASSERT_VALIDATOR_SERVICE_ID, AssertValidator::class)
-            ->setArguments([
-                '$validator' => new Reference(ValidatorInterface::class),
-                '$config' => $config
-            ]);
-
-        $container->setAlias(AssertValidator::class, ApiBundle::ASSERT_VALIDATOR_SERVICE_ID);
     }
 
     private function registerPaginator(array $config, ContainerBuilder $container): void
@@ -278,6 +281,13 @@ final class ApiExtension extends Extension
             ]);
     }
 
+    private function registerAttributeHandler(ContainerBuilder $container): void
+    {
+        $container
+            ->register(AttributeHandlerInterface::class, AttributeHandler::class)
+            ->setArgument('$decoratorHandlers', []);
+    }
+
     private function registerResolver(ContainerBuilder $container): void
     {
         $container
@@ -285,7 +295,7 @@ final class ApiExtension extends Extension
             ->setArguments([
                 '$em' => new Reference(EntityManagerInterface::class),
                 '$container' => new Reference(ContainerInterface::class),
-                '$decorator' => new Reference(ApiBundle::DECORATOR_SERVICE_ID)
+                '$attributeHandler' => new Reference(AttributeHandlerInterface::class)
             ])
             ->addTag('controller.argument_value_resolver');
     }

@@ -54,7 +54,7 @@ final readonly class HttpExceptionEventListener
 
                 $this->jsonResponse($responseSchema);
             } else {
-                if ($this->env !== 'dev') {
+                if ('dev' !== $this->env) {
                     $responseSchema->setHttpCode(500);
                     $responseSchema->setPlatformCode($this->configuration->getServerErrorPlatformCode());
                     $responseSchema->setView(new MessageView($this->configuration->getServerErrorMessage(), true));

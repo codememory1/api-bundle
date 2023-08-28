@@ -38,7 +38,7 @@ final readonly class ChoiceFilter implements FilterInterface
     {
         return [
             'type' => $this->type->name,
-            'values' => array_map(static function (ChoiceFilterValue $value) {
+            'values' => array_map(static function(ChoiceFilterValue $value) {
                 return [
                     'value' => $value->getValue(),
                     'label' => $value->getLabel()

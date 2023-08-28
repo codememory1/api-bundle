@@ -3,7 +3,7 @@
 namespace Codememory\ApiBundle\Decorator\ControllerEntityArgument;
 
 use Attribute;
-use Codememory\ApiBundle\Services\Decorator\Interfaces\DecoratorInterface;
+use Codememory\ApiBundle\AttributeHandler\Interfaces\DecoratorInterface;
 
 #[Attribute(Attribute::TARGET_PARAMETER)]
 final readonly class EntityNotFound implements DecoratorInterface

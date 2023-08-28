@@ -2,8 +2,8 @@
 
 namespace Codememory\ApiBundle\ResponseSchema\Meta;
 
-use Codememory\ApiBundle\ResponseSchema\Interfaces\MetaInterface;
 use Codememory\ApiBundle\Paginator\Interfaces\PaginatorInterface;
+use Codememory\ApiBundle\ResponseSchema\Interfaces\MetaInterface;
 
 final readonly class PaginationMeta implements MetaInterface
 {

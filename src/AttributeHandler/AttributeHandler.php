@@ -1,16 +1,17 @@
 <?php
 
-namespace Codememory\ApiBundle\Services\Decorator;
+namespace Codememory\ApiBundle\AttributeHandler;
 
-use Codememory\ApiBundle\Services\Decorator\Interfaces\DecoratorHandlerInterface;
-use Codememory\ApiBundle\Services\Decorator\Interfaces\DecoratorInterface;
+use Codememory\ApiBundle\AttributeHandler\Interfaces\AttributeHandlerInterface;
+use Codememory\ApiBundle\AttributeHandler\Interfaces\DecoratorHandlerInterface;
+use Codememory\ApiBundle\AttributeHandler\Interfaces\DecoratorInterface;
 use ReflectionAttribute;
 use RuntimeException;
 
-class Decorator
+class AttributeHandler implements AttributeHandlerInterface
 {
     public function __construct(
-        private readonly array $decoratorHandlers
+        private array $decoratorHandlers
     ) {
     }
 
@@ -36,13 +37,22 @@ class Decorator
         }
     }
 
+    public function addDecoratorHandler(DecoratorHandlerInterface $decoratorHandler): AttributeHandlerInterface
+    {
+        if (!array_key_exists($decoratorHandler::class, $this->decoratorHandlers)) {
+            $this->decoratorHandlers[$decoratorHandler::class] = $decoratorHandler;
+        }
+
+        return $this;
+    }
+
     private function attributeInstanceHandler(object $attributeInstance, object $object, mixed ...$args): void
     {
         if ($attributeInstance instanceof DecoratorInterface) {
             $attributeName = $attributeInstance::class;
 
             if (!class_exists($attributeInstance->getHandler())) {
-                throw new RuntimeException("Decorator handler {$attributeInstance->getHandler()} for $attributeName decorator not found");
+                throw new RuntimeException("Decorator handler {$attributeInstance->getHandler()} for {$attributeName} decorator not found");
             }
 
             if (!array_key_exists($attributeInstance->getHandler(), $this->decoratorHandlers)) {

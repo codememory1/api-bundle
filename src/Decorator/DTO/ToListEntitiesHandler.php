@@ -2,12 +2,14 @@
 
 namespace Codememory\ApiBundle\Decorator\DTO;
 
+use function call_user_func;
 use Codememory\Dto\Exceptions\MethodNotFoundException;
 use Codememory\Dto\Interfaces\DataTransferObjectInterface;
 use Codememory\Dto\Interfaces\DecoratorHandlerInterface;
 use Codememory\Dto\Interfaces\DecoratorInterface;
 use Codememory\Dto\Interfaces\ExecutionContextInterface;
 use Doctrine\ORM\EntityManagerInterface;
+use function is_array;
 
 final readonly class ToListEntitiesHandler implements DecoratorHandlerInterface
 {

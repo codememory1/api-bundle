@@ -4,9 +4,10 @@ namespace Codememory\ApiBundle\Adapter;
 
 use Codememory\ApiBundle\Interfaces\Adapter\JWTAdapterInterface;
 use DateTimeImmutable;
-use Firebase\JWT\Key;
-use LogicException;
 use Firebase\JWT\JWT;
+use Firebase\JWT\Key;
+use const JSON_THROW_ON_ERROR;
+use LogicException;
 use Throwable;
 
 class BaseJWTAdapter implements JWTAdapterInterface
@@ -20,6 +21,17 @@ class BaseJWTAdapter implements JWTAdapterInterface
     ) {
     }
 
+    protected function payloadBuilder(array $payload): array
+    {
+        $now = new DateTimeImmutable();
+
+        return [
+            'exp' => $now->getTimestamp() + $this->ttl,
+            'lat' => $now->getTimestamp(),
+            ...$payload
+        ];
+    }
+
     public function setAlg(string $alg): self
     {
         $this->alg = $alg;
@@ -30,10 +42,7 @@ class BaseJWTAdapter implements JWTAdapterInterface
     public function encode(array $payload): string
     {
         if (null === $this->privateKey) {
-            throw new LogicException(sprintf(
-                'The private key is not specified for the %s adapter, check if the path to the key is correctly specified in services.yaml',
-                self::class
-            ));
+            throw new LogicException(sprintf('The private key is not specified for the %s adapter, check if the path to the key is correctly specified in services.yaml', self::class));
         }
 
         return JWT::encode($this->payloadBuilder($payload), $this->privateKey, $this->alg);
@@ -42,10 +51,7 @@ class BaseJWTAdapter implements JWTAdapterInterface
     public function decode(string $token): array|bool
     {
         if (null === $this->publicKey) {
-            throw new LogicException(sprintf(
-                'The public key is not specified for the %s adapter, check if the path to the key is correctly specified in services.yaml',
-                self::class
-            ));
+            throw new LogicException(sprintf('The public key is not specified for the %s adapter, check if the path to the key is correctly specified in services.yaml', self::class));
         }
 
         try {
@@ -57,16 +63,5 @@ class BaseJWTAdapter implements JWTAdapterInterface
         } catch (Throwable) {
             return false;
         }
-    }
-
-    protected function payloadBuilder(array $payload): array
-    {
-        $now = new DateTimeImmutable();
-
-        return [
-            'exp' => $now->getTimestamp() + $this->ttl,
-            'lat' => $now->getTimestamp(),
-            ...$payload
-        ];
     }
 }

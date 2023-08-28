@@ -73,14 +73,17 @@ final class ApiBundle extends Bundle
     // Response Schema
     public const RESPONSE_SCHEMA_DEFAULT_FACTORY = 'codememory.response_schema.factory';
 
+    // Assert
+    public const ASSERT_DEFAULT_VALIDATOR_SERVICE = 'codememory.assert.default_validator';
+
+    // Attribute Handler
+    public const DECORATOR_HANDLER_TAG = 'codememory.decorator.handler';
+
     // Others
     public const WORKER_OPTIONS_SERVICE_ID = 'codememory.multithreading.worker_options';
     public const PROCESS_OPTIONS_SERVICE_ID = 'codememory.multithreading.process_options';
     public const PROCESS_MANAGER_SERVICE_ID = 'codememory.multithreading.process_manager';
     public const JSON_SCHEMA_VALIDATOR_SERVICE_ID = 'codememory.validator.json';
-    public const ASSERT_VALIDATOR_SERVICE_ID = 'codememory.validator.assert';
-    public const DECORATOR_SERVICE_ID = 'codememory.decorator';
-    public const DECORATOR_HANDLER_TAG = 'codememory.decorator.handler';
     public const JWT_ADAPTER_TAG = 'codememory.jwt.adapter';
 
     public function build(ContainerBuilder $container): void

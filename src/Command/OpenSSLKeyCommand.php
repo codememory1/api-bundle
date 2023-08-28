@@ -30,8 +30,8 @@ final class OpenSSLKeyCommand extends Command
         $privatePath = $this->getFilePath($input, '_private_key.pem');
         $publicPath = $this->getFilePath($input, '_public_key.pem');
 
-        shell_exec("openssl genrsa -out $privatePath 2048");
-        shell_exec("openssl rsa -in $privatePath -outform PEM -pubout -out $publicPath");
+        shell_exec("openssl genrsa -out {$privatePath} 2048");
+        shell_exec("openssl rsa -in {$privatePath} -outform PEM -pubout -out {$publicPath}");
 
         $style->info('Keys generated successfully');
 
@@ -40,6 +40,6 @@ final class OpenSSLKeyCommand extends Command
 
     private function getFilePath(InputInterface $input, string $endingFilename): string
     {
-        return rtrim($input->getArgument('path'), '/').'/'.$input->getArgument('name').$endingFilename;
+        return rtrim($input->getArgument('path'), '/') . '/' . $input->getArgument('name') . $endingFilename;
     }
 }

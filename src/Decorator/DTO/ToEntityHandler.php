@@ -2,6 +2,7 @@
 
 namespace Codememory\ApiBundle\Decorator\DTO;
 
+use function call_user_func;
 use Codememory\Dto\Exceptions\MethodNotFoundException;
 use Codememory\Dto\Interfaces\DataTransferObjectInterface;
 use Codememory\Dto\Interfaces\DecoratorHandlerInterface;

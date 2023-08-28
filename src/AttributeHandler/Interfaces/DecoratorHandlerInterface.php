@@ -1,6 +1,6 @@
 <?php
 
-namespace Codememory\ApiBundle\Services\Decorator\Interfaces;
+namespace Codememory\ApiBundle\AttributeHandler\Interfaces;
 
 interface DecoratorHandlerInterface
 {

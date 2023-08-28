@@ -16,11 +16,6 @@ abstract class AbstractRepository extends ServiceEntityRepository
         parent::__construct($registry, $this->entity);
     }
 
-    public function createQB(?string $indexBy = null): QueryBuilder
-    {
-        return $this->createQueryBuilder($this->alias, $indexBy);
-    }
-
     protected function generateQueryByProcess(int $processNumber, int $numberProcesses): QueryBuilder
     {
         $qb = $this->createQB();
@@ -31,5 +26,10 @@ abstract class AbstractRepository extends ServiceEntityRepository
             ->setMaxResults(ceil($count / $numberProcesses));
 
         return $qb;
+    }
+
+    public function createQB(?string $indexBy = null): QueryBuilder
+    {
+        return $this->createQueryBuilder($this->alias, $indexBy);
     }
 }

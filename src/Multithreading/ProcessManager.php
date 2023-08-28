@@ -30,8 +30,8 @@ class ProcessManager
 
         while ($i < $count) {
             $this->add($callback);
-            
-            $i++;
+
+            ++$i;
         }
 
         return $this;

@@ -1,6 +1,6 @@
 <?php
 
-namespace Codememory\ApiBundle\Services\QueryProcessor;
+namespace Codememory\ApiBundle\QueryProcessor;
 
 final class PaginationQueryProcessor extends AbstractQueryProcessor
 {
