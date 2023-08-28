@@ -2,8 +2,8 @@
 
 namespace Codememory\ApiBundle\Decorator\ControllerEntityArgument;
 
-use Codememory\ApiBundle\Services\Decorator\Interfaces\DecoratorHandlerInterface;
-use Codememory\ApiBundle\Services\Decorator\Interfaces\DecoratorInterface;
+use Codememory\ApiBundle\AttributeHandler\Interfaces\DecoratorHandlerInterface;
+use Codememory\ApiBundle\AttributeHandler\Interfaces\DecoratorInterface;
 
 final class EntityNotFoundHandler implements DecoratorHandlerInterface
 {

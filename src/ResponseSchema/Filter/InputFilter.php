@@ -4,11 +4,11 @@ namespace Codememory\ApiBundle\ResponseSchema\Filter;
 
 use Codememory\ApiBundle\ResponseSchema\Interfaces\FilterInterface;
 
-final class InputFilter implements FilterInterface
+final readonly class InputFilter implements FilterInterface
 {
     public function __construct(
-        private readonly string $label,
-        private readonly string $key
+        private string $label,
+        private string $key
     ) {
     }
 

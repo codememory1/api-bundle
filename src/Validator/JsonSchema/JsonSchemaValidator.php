@@ -10,8 +10,8 @@ use JsonSchema\Validator;
 
 class JsonSchemaValidator
 {
-    private bool $isValidated = false;
-    private array $errors = [];
+    protected bool $isValidated = false;
+    protected array $errors = [];
 
     public function validate(array $data, string $schema, ?int $mode = null): self
     {

@@ -4,12 +4,12 @@ namespace Codememory\ApiBundle\ResponseSchema\View;
 
 use Codememory\ApiBundle\ResponseSchema\Interfaces\ViewInterface;
 
-final class MessageView implements ViewInterface
+final readonly class MessageView implements ViewInterface
 {
     public function __construct(
-        private readonly string $message,
-        private readonly bool $isError = false,
-        private readonly array $messageParameters = []
+        private string $message,
+        private bool $isError = false,
+        private array $messageParameters = []
     ) {
     }
 

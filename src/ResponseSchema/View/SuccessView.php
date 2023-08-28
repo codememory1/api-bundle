@@ -4,10 +4,10 @@ namespace Codememory\ApiBundle\ResponseSchema\View;
 
 use Codememory\ApiBundle\ResponseSchema\Interfaces\ViewInterface;
 
-final class SuccessView implements ViewInterface
+final readonly class SuccessView implements ViewInterface
 {
     public function __construct(
-        private readonly array $data
+        private array $data
     ) {
     }
 

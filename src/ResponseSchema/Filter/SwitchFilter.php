@@ -4,13 +4,13 @@ namespace Codememory\ApiBundle\ResponseSchema\Filter;
 
 use Codememory\ApiBundle\ResponseSchema\Interfaces\FilterInterface;
 
-final class SwitchFilter implements FilterInterface
+final readonly class SwitchFilter implements FilterInterface
 {
     public function __construct(
-        private readonly string $label,
-        private readonly string $key,
-        private readonly mixed $disableValue = 'false',
-        private readonly mixed $enableValue = 'true'
+        private string $label,
+        private string $key,
+        private mixed $disableValue = 'false',
+        private mixed $enableValue = 'true'
     ) {
     }
 

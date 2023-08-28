@@ -2,23 +2,21 @@
 
 namespace Codememory\ApiBundle\Resolver;
 
+use Codememory\ApiBundle\AttributeHandler\Interfaces\AttributeHandlerInterface;
 use Codememory\ApiBundle\Entity\Interfaces\EntityInterface;
-use Codememory\ApiBundle\Services\Decorator\Decorator;
 use Doctrine\ORM\EntityManagerInterface;
 use LogicException;
-use ReflectionAttribute;
-use ReflectionClass;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpKernel\Controller\ValueResolverInterface;
 use Symfony\Component\HttpKernel\ControllerMetadata\ArgumentMetadata;
 
-final class ControllerEntityArgumentResolver implements ValueResolverInterface
+final readonly class ControllerEntityArgumentResolver implements ValueResolverInterface
 {
     public function __construct(
-        private readonly EntityManagerInterface $em,
-        private readonly ContainerInterface $container,
-        private readonly Decorator $decorator
+        private EntityManagerInterface $em,
+        private ContainerInterface $container,
+        private AttributeHandlerInterface $attributeHandler
     ) {
     }
 
@@ -30,7 +28,7 @@ final class ControllerEntityArgumentResolver implements ValueResolverInterface
             $entityRepository = $this->em->getRepository($argument->getType());
             $finedEntity = $entityRepository->findOneBy([$routeParameter['property'] => $routeParameter['value']]);
 
-            $this->decorator->handleByAttributeInstances($argumentAttributes, $this->getController($request), $finedEntity);
+            $this->attributeHandler->handleByAttributeInstances($argumentAttributes, $this->getController($request), $finedEntity);
 
             yield $finedEntity;
         } else {

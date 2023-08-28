@@ -2,16 +2,16 @@
 
 namespace Codememory\ApiBundle\EventListener\KernelController;
 
-use Codememory\ApiBundle\Services\Decorator\Decorator;
+use Codememory\ApiBundle\AttributeHandler\Interfaces\AttributeHandlerInterface;
 use function is_array;
 use ReflectionClass;
 use ReflectionException;
 use Symfony\Component\HttpKernel\Event\ControllerEvent;
 
-final class AttributeControllerEventListener
+final readonly class AttributeControllerEventListener
 {
     public function __construct(
-        private readonly Decorator $decorator
+        private AttributeHandlerInterface $attributeHandler
     ) {
     }
 
@@ -26,8 +26,8 @@ final class AttributeControllerEventListener
 
             $reflectionClass = new ReflectionClass($controller);
 
-            $this->decorator->handle($reflectionClass->getAttributes(), $controller);
-            $this->decorator->handle($reflectionClass->getMethod($method)->getAttributes(), $controller);
+            $this->attributeHandler->handle($reflectionClass->getAttributes(), $controller);
+            $this->attributeHandler->handle($reflectionClass->getMethod($method)->getAttributes(), $controller);
         }
     }
 }

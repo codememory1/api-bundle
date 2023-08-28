@@ -2,10 +2,10 @@
 
 namespace Codememory\ApiBundle\Validator\JsonSchema;
 
-final class ValidationError
+final readonly class ValidationError
 {
     public function __construct(
-        private readonly array $error
+        private array $error
     ) {
     }
 

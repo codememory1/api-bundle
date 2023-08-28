@@ -33,7 +33,7 @@ final class AddJWTAdapterPass implements CompilerPassInterface
 
             $private = $container->getParameterBag()->resolveValue($tag['private']);
             $public = $container->getParameterBag()->resolveValue($tag['public']);
-            
+
             $container
                 ->getDefinition($id)
                 ->setArguments([

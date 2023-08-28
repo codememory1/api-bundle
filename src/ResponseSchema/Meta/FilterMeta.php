@@ -5,13 +5,13 @@ namespace Codememory\ApiBundle\ResponseSchema\Meta;
 use Codememory\ApiBundle\ResponseSchema\Interfaces\FilterInterface;
 use Codememory\ApiBundle\ResponseSchema\Interfaces\MetaInterface;
 
-final class FilterMeta implements MetaInterface
+final readonly class FilterMeta implements MetaInterface
 {
     /**
      * @param array<int, FilterInterface> $filters
      */
     public function __construct(
-        private readonly array $filters
+        private array $filters
     ) {
     }
 

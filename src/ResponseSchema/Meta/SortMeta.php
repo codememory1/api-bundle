@@ -5,13 +5,13 @@ namespace Codememory\ApiBundle\ResponseSchema\Meta;
 use Codememory\ApiBundle\ResponseSchema\Interfaces\MetaInterface;
 use Codememory\ApiBundle\ResponseSchema\Interfaces\SortInterface;
 
-final class SortMeta implements MetaInterface
+final readonly class SortMeta implements MetaInterface
 {
     /**
      * @param array<int, SortInterface> $sorts
      */
     public function __construct(
-        private readonly array $sorts
+        private array $sorts
     ) {
     }
 
