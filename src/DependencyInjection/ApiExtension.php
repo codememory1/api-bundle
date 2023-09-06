@@ -11,12 +11,14 @@ use Codememory\ApiBundle\Factory\ERCConfigurationFactory;
 use Codememory\ApiBundle\Factory\ResponseSchemaFactory;
 use Codememory\ApiBundle\HttpErrorHandler\HttpErrorHandlerConfiguration;
 use Codememory\ApiBundle\HttpErrorHandler\Interfaces\HttpErrorHandlerConfigurationInterface;
+use Codememory\ApiBundle\JWT\Interfaces\JWTInterface;
+use Codememory\ApiBundle\JWT\JWT;
 use Codememory\ApiBundle\Multithreading\ProcessManager;
 use Codememory\ApiBundle\Multithreading\ProcessOptions;
 use Codememory\ApiBundle\Multithreading\WorkerOptions;
+use Codememory\ApiBundle\Paginator\ArrayPaginator;
 use Codememory\ApiBundle\Paginator\DoctrinePaginator;
 use Codememory\ApiBundle\Paginator\Interfaces\PaginatorConfigurationInterface;
-use Codememory\ApiBundle\Paginator\Interfaces\PaginatorInterface;
 use Codememory\ApiBundle\Paginator\Interfaces\PaginatorOptionsInterface;
 use Codememory\ApiBundle\Paginator\PaginatorConfiguration;
 use Codememory\ApiBundle\Paginator\PaginatorOptions;
@@ -71,25 +73,19 @@ final class ApiExtension extends Extension
 
         $this->registerDTOParameters($config['dto'], $container);
         $this->registerDefaultDTOServices($config['dto'], $container);
-
         $this->registerERCParameters($config['erc'], $container);
         $this->registerDefaultERCServices($container);
-
         $this->registerResponseSchema($config['response_schema'], $container);
-
         $this->registerHttpErrorHandler($config['http_error_handler'], $container);
-
         $this->registerAssertServices($config['assert'], $container);
-
         $this->registerWorkerOptions($config['threading']['worker_options'], $container);
         $this->registerProcessOptions($config['threading']['process_options'], $container);
-
         $this->registerAttributeHandler($container);
-
+        $this->registerPaginator($config['pagination'], $container);
+        $this->registerJWT($container);
         $this->registerProcessManager($container);
         $this->registerJsonSchemaValidator($container);
         $this->registerQueryProcessors($container);
-        $this->registerPaginator($config['pagination'], $container);
         $this->registerResolver($container);
     }
 
@@ -231,8 +227,15 @@ final class ApiExtension extends Extension
             ->register(ApiBundle::PAGINATION_DEFAULT_PAGINATOR, DoctrinePaginator::class)
             ->setArgument('$options', new Reference($config['options_service']));
 
+        $container
+            ->register(DoctrinePaginator::class, DoctrinePaginator::class)
+            ->setArgument('$options', new Reference(PaginatorOptionsInterface::class));
+
+        $container
+            ->register(ArrayPaginator::class, ArrayPaginator::class)
+            ->setArgument('$options', new Reference(PaginatorOptionsInterface::class));
+
         $container->setAlias(PaginatorConfigurationInterface::class, $config['configuration_service']);
-        $container->setAlias(PaginatorInterface::class, $config['paginator_service']);
         $container->setAlias(PaginatorOptionsInterface::class, $config['options_service']);
     }
 
@@ -305,5 +308,10 @@ final class ApiExtension extends Extension
         $container->register(ApiBundle::RESPONSE_SCHEMA_DEFAULT_FACTORY, ResponseSchemaFactory::class);
 
         $container->setAlias(ResponseSchemaFactoryInterface::class, $config['factory_service']);
+    }
+
+    private function registerJWT(ContainerBuilder $container): void
+    {
+        $container->register(JWTInterface::class, JWT::class);
     }
 }
