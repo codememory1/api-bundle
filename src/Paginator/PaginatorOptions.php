@@ -4,7 +4,7 @@ namespace Codememory\ApiBundle\Paginator;
 
 use Codememory\ApiBundle\Paginator\Interfaces\PaginatorConfigurationInterface;
 use Codememory\ApiBundle\Paginator\Interfaces\PaginatorOptionsInterface;
-use Codememory\ApiBundle\Services\QueryProcessor\PaginationQueryProcessor;
+use Codememory\ApiBundle\QueryProcessor\PaginationQueryProcessor;
 
 final readonly class PaginatorOptions implements PaginatorOptionsInterface
 {

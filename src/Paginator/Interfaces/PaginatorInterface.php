@@ -4,7 +4,7 @@ namespace Codememory\ApiBundle\Paginator\Interfaces;
 
 interface PaginatorInterface
 {
-    public function setQuery(mixed $query): self;
+    public function setPaginatedValue(mixed $value): self;
 
     public function getTotalRecords(): int;
 
