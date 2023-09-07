@@ -3,7 +3,6 @@
 namespace Codememory\ApiBundle;
 
 use Codememory\ApiBundle\DependencyInjection\ApiExtension;
-use Codememory\ApiBundle\DependencyInjection\Compiler\AddJWTAdapterPass;
 use Codememory\ApiBundle\DependencyInjection\Compiler\RegisterDecoratorPass;
 use Codememory\ApiBundle\DependencyInjection\Compiler\RegisterDTODecoratorPass;
 use Codememory\ApiBundle\DependencyInjection\Compiler\RegisterDTOObjectPass;
@@ -84,7 +83,6 @@ final class ApiBundle extends Bundle
     public const PROCESS_OPTIONS_SERVICE_ID = 'codememory.multithreading.process_options';
     public const PROCESS_MANAGER_SERVICE_ID = 'codememory.multithreading.process_manager';
     public const JSON_SCHEMA_VALIDATOR_SERVICE_ID = 'codememory.validator.json';
-    public const JWT_ADAPTER_TAG = 'codememory.jwt.adapter';
 
     public function build(ContainerBuilder $container): void
     {
@@ -95,7 +93,6 @@ final class ApiBundle extends Bundle
         $container->addCompilerPass(new RegisterERCDecoratorPass());
         $container->addCompilerPass(new RegisterERCObjectPass());
         $container->addCompilerPass(new RegisterDecoratorPass());
-        $container->addCompilerPass(new AddJWTAdapterPass());
     }
 
     #[Pure]
