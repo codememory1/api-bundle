@@ -2,8 +2,10 @@
 
 namespace Codememory\ApiBundle\Decorator\DTO;
 
+use Attribute;
 use Codememory\Dto\Interfaces\DecoratorInterface;
 
+#[Attribute(Attribute::TARGET_PROPERTY)]
 final readonly class ToListEntities implements DecoratorInterface
 {
     public function __construct(
