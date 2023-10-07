@@ -31,6 +31,10 @@ services:
     autowire: true
     tags:
       - { name: codememory.dto.decorator }
+  
+  Codememory\ApiBundle\Decorator\DTO\FileExpected:
+    tags:
+      - { name: codememory.dto.decorator }
 
   Codememory\ApiBundle\Decorator\ERC\CallbackWithEntityRepositoryHandler:
     autowire: true
