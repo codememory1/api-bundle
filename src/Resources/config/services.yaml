@@ -32,7 +32,7 @@ services:
     tags:
       - { name: codememory.dto.decorator }
   
-  Codememory\ApiBundle\Decorator\DTO\FileExpected:
+  Codememory\ApiBundle\Decorator\DTO\FileExpectedHandler:
     tags:
       - { name: codememory.dto.decorator }
 
