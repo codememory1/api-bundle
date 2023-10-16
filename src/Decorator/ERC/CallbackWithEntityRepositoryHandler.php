@@ -19,9 +19,10 @@ final readonly class CallbackWithEntityRepositoryHandler implements DecoratorHan
      */
     public function handle(DecoratorInterface $decorator, ExecutionContextInterface $context): void
     {
-        $repository = $this->em->getRepository($decorator->entity);
-        $newValue = $context->getProperty()->{$decorator->callbackMethodName}($repository, $context->getValue());
-
-        $context->setValue($newValue);
+        $context->setValue($context->getResponsePrototype()->{$decorator->callbackMethodName}(
+            $this->em->getRepository($decorator->entity),
+            $context->getPrototypeObject(),
+            $context->getValue()
+        ));
     }
 }
