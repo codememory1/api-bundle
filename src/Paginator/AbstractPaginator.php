@@ -16,6 +16,10 @@ abstract class AbstractPaginator implements PaginatorInterface
     {
         $pageFromQuery = $this->options->getPage();
 
+        if ($pageFromQuery === -1) {
+            return $this->getTotalPages();
+        }
+
         if ($pageFromQuery < 1) {
             return 1;
         }
