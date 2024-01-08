@@ -34,44 +34,43 @@ final readonly class HttpExceptionEventListener
                 $responseSchema->setPlatformCode($exception->platformCode);
                 $responseSchema->setView(new MessageView($exception->getMessage(), true, $exception->messageParameters));
 
-                $this->jsonResponse($responseSchema);
+                $this->jsonResponse($event, $responseSchema);
             } else if ($exception instanceof NotFoundHttpException) {
                 $responseSchema->setHttpCode(404);
                 $responseSchema->setPlatformCode($this->configuration->getNotFoundPlatformCode());
                 $responseSchema->setView(new MessageView($this->configuration->getNotFoundMessage(), true));
 
-                $this->jsonResponse($responseSchema);
+                $this->jsonResponse($event, $responseSchema);
             } else if ($exception instanceof MethodNotAllowedHttpException) {
                 $responseSchema->setHttpCode(405);
                 $responseSchema->setPlatformCode($this->configuration->getMethodNotAllowedPlatformCode());
                 $responseSchema->setView(new MessageView($this->configuration->getMethodNotAllowedMessage(), true));
 
-                $this->jsonResponse($responseSchema);
+                $this->jsonResponse($event, $responseSchema);
             } else if ($exception instanceof AccessDeniedHttpException) {
                 $responseSchema->setHttpCode(403);
                 $responseSchema->setPlatformCode($this->configuration->getAccessIsDeniedPlatformCode());
                 $responseSchema->setView(new MessageView($this->configuration->getAccessIsDeniedMessage(), true));
 
-                $this->jsonResponse($responseSchema);
+                $this->jsonResponse($event, $responseSchema);
             } else {
                 if ('dev' !== $this->env) {
                     $responseSchema->setHttpCode(500);
                     $responseSchema->setPlatformCode($this->configuration->getServerErrorPlatformCode());
                     $responseSchema->setView(new MessageView($this->configuration->getServerErrorMessage(), true));
 
-                    $this->jsonResponse($responseSchema);
+                    $this->jsonResponse($event, $responseSchema);
                 }
             }
         }
     }
 
-    private function jsonResponse(ResponseSchemaInterface $responseSchema): void
+    private function jsonResponse(ExceptionEvent $event, ResponseSchemaInterface $responseSchema): void
     {
-        (new JsonResponse(
+        $event->setResponse(new JsonResponse(
             $responseSchema->toArray(),
             $responseSchema->getHttpCode(),
             $responseSchema->getHeaders()
-        )
-        )->send();
+        ));
     }
 }
