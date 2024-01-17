@@ -23,7 +23,11 @@ final readonly class PaginatorOptions implements PaginatorOptionsInterface
     {
         $page = $this->paginationQueryProcessor->getPage();
 
-        return $page <= 0 ? 1 : $page;
+        if ($page === -1) {
+            return -1;
+        }
+
+        return $page < -1 ? 1 : $page;
     }
 
     public function getLimit(): int

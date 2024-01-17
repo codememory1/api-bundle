@@ -16,7 +16,7 @@ final class PaginationQueryProcessor extends AbstractQueryProcessor
             'properties' => [
                 'page' => [
                     'type' => ['integer', 'string'],
-                    'pattern' => '^[0-9]+$'
+                    'pattern' => '^-?[0-9]+$'
                 ],
                 'limit' => [
                     'type' => ['integer', 'string'],
@@ -28,7 +28,7 @@ final class PaginationQueryProcessor extends AbstractQueryProcessor
 
     public function getPage(): int
     {
-        return $this->get('page') ?: 0;
+        return $this->has('page') ? (int) $this->get('page') : 0;
     }
 
     public function getLimit(): int
