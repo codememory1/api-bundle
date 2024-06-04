@@ -21,8 +21,9 @@ final readonly class ControllerArgumentValueAttributeResolver implements ValueRe
     {
         if ($this->supports($argument)) {
             $value = [];
+            $attributes = array_filter($argument->getAttributes(), static fn (object $attribute) => $attribute instanceof ControllerArgumentValueResolverDecoratorInterface);
 
-            foreach ($argument->getAttributes() as $attribute) {
+            foreach ($attributes as $attribute) {
                 $value = $this->attributeHandler($attribute, $request, $argument);
             }
 
@@ -37,18 +38,14 @@ final readonly class ControllerArgumentValueAttributeResolver implements ValueRe
         return count($argument->getAttributes()) > 0;
     }
 
-    private function attributeHandler(object $attribute, Request $request, ArgumentMetadata $argument): iterable
+    private function attributeHandler(ControllerArgumentValueResolverDecoratorInterface $attribute, Request $request, ArgumentMetadata $argument): iterable
     {
-        if ($attribute instanceof ControllerArgumentValueResolverDecoratorInterface) {
-            $handler = $this->controllerArgumentValueDecoratorRegistry->getHandler($attribute->getHandler());
+        $handler = $this->controllerArgumentValueDecoratorRegistry->getHandler($attribute->getHandler());
 
-            if (null === $handler) {
-                throw new DecoratorHandlerNotRegisteredException($attribute::class, $attribute->getHandler(), ApiBundle::CONTROLLER_ARGUMENT_VALUE_RESOLVER_DECORATOR_TAG);
-            }
-
-            return $this->controllerArgumentValueDecoratorRegistry->getHandler($attribute->getHandler())->handle($attribute, $request, $argument);
+        if (null === $handler) {
+            throw new DecoratorHandlerNotRegisteredException($attribute::class, $attribute->getHandler(), ApiBundle::CONTROLLER_ARGUMENT_VALUE_RESOLVER_DECORATOR_TAG);
         }
 
-        return [];
+        return $this->controllerArgumentValueDecoratorRegistry->getHandler($attribute->getHandler())->handle($attribute, $request, $argument);
     }
 }
