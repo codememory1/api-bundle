@@ -1,5 +1,12 @@
 services:
+  _defaults:
+    autowire: true
+    autoconfigure: true
+
   Symfony\Component\DependencyInjection\ContainerInterface: '@service_container'
+
+  Symfony\Component\HttpKernel\ControllerMetadata\ArgumentMetadataFactoryInterface:
+    class: Symfony\Component\HttpKernel\ControllerMetadata\ArgumentMetadataFactory
 
   # Event Listeners
   Codememory\ApiBundle\EventListener\KernelControllerViewEventListener:
@@ -7,15 +14,29 @@ services:
       - { name: kernel.event_listener, event: kernel.view, method: onKernelView }
 
   Codememory\ApiBundle\EventListener\KernelController\AttributeControllerEventListener:
-    arguments:
-      $attributeHandler: '@Codememory\ApiBundle\AttributeHandler\Interfaces\AttributeHandlerInterface'
     tags:
       - { name: kernel.event_listener, event: kernel.controller, method: onKernelController }
 
-  # Decorators
-  Codememory\ApiBundle\Decorator\ControllerEntityArgument\EntityNotFoundHandler:
+  Codememory\ApiBundle\EventListener\KernelControllerArguments\EventDispatchArgumentEventListener:
     tags:
-      - { name: codememory.decorator.handler }
+      - { name: kernel.event_listener, event: kernel.controller_arguments, method: onKernelControllerArguments }
+
+  Codememory\ApiBundle\EventListener\ControllerArgument\AttributeHandlerEventListener:
+    tags:
+      - { name: kernel.event_listener, event: codememory.controller_argument, method: onControllerArgument }
+
+  # Decorators
+  Codememory\ApiBundle\Decorator\ControllerArgumentValueResolver\:
+    resource: '../../Decorator/ControllerArgumentValueResolver/*Handler.php'
+    autowire: true
+    tags:
+      - { name: codememory.decorator.controller_argument_value_resolver }
+
+  Codememory\ApiBundle\Decorator\ControllerArgument\:
+    resource: '../../Decorator/ControllerArgument/*Handler.php'
+    autowire: true
+    tags:
+      - { name: codememory.decorator.controller_argument }
 
   Codememory\ApiBundle\Decorator\DTO\HttpPatchHandler:
     autowire: true

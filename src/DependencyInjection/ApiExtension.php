@@ -3,8 +3,12 @@
 namespace Codememory\ApiBundle\DependencyInjection;
 
 use Codememory\ApiBundle\ApiBundle;
-use Codememory\ApiBundle\AttributeHandler\AttributeHandler;
-use Codememory\ApiBundle\AttributeHandler\Interfaces\AttributeHandlerInterface;
+use Codememory\ApiBundle\AttributeHandler\Interfaces\ControllerArgumentDecoratorRegistryInterface;
+use Codememory\ApiBundle\AttributeHandler\Interfaces\ControllerArgumentValueResolverDecoratorRegistryInterface;
+use Codememory\ApiBundle\AttributeHandler\Interfaces\ControllerClassMethodDecoratorRegistryInterface;
+use Codememory\ApiBundle\AttributeHandler\Registry\ControllerArgumentDecoratorRegistry;
+use Codememory\ApiBundle\AttributeHandler\Registry\ControllerArgumentValueResolverDecoratorRegistry;
+use Codememory\ApiBundle\AttributeHandler\Registry\ControllerClassMethodDecoratorRegistry;
 use Codememory\ApiBundle\EventListener\KernelException\HttpExceptionEventListener;
 use Codememory\ApiBundle\Factory\DTOConfigurationFactory;
 use Codememory\ApiBundle\Factory\ERCConfigurationFactory;
@@ -25,7 +29,7 @@ use Codememory\ApiBundle\Paginator\PaginatorOptions;
 use Codememory\ApiBundle\QueryProcessor\FilterQueryProcessor;
 use Codememory\ApiBundle\QueryProcessor\PaginationQueryProcessor;
 use Codememory\ApiBundle\QueryProcessor\SortQueryProcessor;
-use Codememory\ApiBundle\Resolver\ControllerEntityArgumentResolver;
+use Codememory\ApiBundle\Resolver\ControllerArgumentValueAttributeResolver;
 use Codememory\ApiBundle\ResponseSchema\Interfaces\ResponseSchemaFactoryInterface;
 use Codememory\ApiBundle\Validator\Assert\AssertValidator;
 use Codememory\ApiBundle\Validator\Assert\Interfaces\AssertValidatorInterface;
@@ -41,12 +45,10 @@ use Codememory\EntityResponseControl\Factory\ExecutionContextFactory as ERCConte
 use Codememory\EntityResponseControl\Provider\ResponsePrototypePrivatePropertyProvider;
 use Codememory\EntityResponseControl\ResponseKeyNamingStrategy\ResponseKeyNamingStrategySnakeCase;
 use Codememory\Reflection\ReflectorManager;
-use Doctrine\ORM\EntityManagerInterface;
 use Exception;
 use Symfony\Component\Cache\Adapter\FilesystemAdapter;
 use Symfony\Component\Config\FileLocator;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
-use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\DependencyInjection\Extension\Extension;
 use Symfony\Component\DependencyInjection\Loader\YamlFileLoader;
 use Symfony\Component\DependencyInjection\Reference;
@@ -80,13 +82,16 @@ final class ApiExtension extends Extension
         $this->registerAssertServices($config['assert'], $container);
         $this->registerWorkerOptions($config['threading']['worker_options'], $container);
         $this->registerProcessOptions($config['threading']['process_options'], $container);
-        $this->registerAttributeHandler($container);
         $this->registerPaginator($config['pagination'], $container);
         $this->registerJWT($container);
         $this->registerProcessManager($container);
         $this->registerJsonSchemaValidator($container);
         $this->registerQueryProcessors($container);
         $this->registerResolver($container);
+
+        $this->registerControllerArgumentValueRegistryResolver($container, $config['decorators']['controller_argument_value']);
+        $this->registerControllerClassMethodRegistryResolver($container, $config['decorators']['controller_class_method']);
+        $this->registerControllerArgumentResolver($container, $config['decorators']['controller_argument']);
     }
 
     private function registerDefaultDTOServices(array $config, ContainerBuilder $container): void
@@ -284,21 +289,12 @@ final class ApiExtension extends Extension
             ]);
     }
 
-    private function registerAttributeHandler(ContainerBuilder $container): void
-    {
-        $container
-            ->register(AttributeHandlerInterface::class, AttributeHandler::class)
-            ->setArgument('$decoratorHandlers', []);
-    }
-
     private function registerResolver(ContainerBuilder $container): void
     {
         $container
-            ->register(ControllerEntityArgumentResolver::class, ControllerEntityArgumentResolver::class)
+            ->register(ControllerArgumentValueAttributeResolver::class, ControllerArgumentValueAttributeResolver::class)
             ->setArguments([
-                '$em' => new Reference(EntityManagerInterface::class),
-                '$container' => new Reference(ContainerInterface::class),
-                '$attributeHandler' => new Reference(AttributeHandlerInterface::class)
+                '$controllerArgumentValueDecoratorRegistry' => new Reference(ControllerArgumentValueResolverDecoratorRegistryInterface::class)
             ])
             ->addTag('controller.argument_value_resolver');
     }
@@ -313,5 +309,31 @@ final class ApiExtension extends Extension
     private function registerJWT(ContainerBuilder $container): void
     {
         $container->register(JWTInterface::class, JWT::class);
+    }
+
+    private function registerControllerArgumentValueRegistryResolver(ContainerBuilder $container, array $config): void
+    {
+        $container->register(ApiBundle::CONTROLLER_ARGUMENT_VALUE_RESOLVER_DEFAULT_DECORATOR_REGISTRY_SERVICE_ID, ControllerArgumentValueResolverDecoratorRegistry::class);
+        $container->setParameter(ApiBundle::CONTROLLER_ARGUMENT_VALUE_RESOLVER_DECORATOR_REGISTRY_SERVICE_PARAMETER, $config['registry_service']);
+
+        $container->setAlias(ControllerArgumentValueResolverDecoratorRegistryInterface::class, $config['registry_service']);
+    }
+
+    private function registerControllerClassMethodRegistryResolver(ContainerBuilder $container, array $config): void
+    {
+        $container->register(ApiBundle::CONTROLLER_CLASS_METHOD_DEFAULT_DECORATOR_REGISTRY_SERVICE_ID, ControllerClassMethodDecoratorRegistry::class);
+
+        $container->setParameter(ApiBundle::CONTROLLER_CLASS_METHOD_DECORATOR_REGISTRY_SERVICE_PARAMETER, $config['registry_service']);
+
+        $container->setAlias(ControllerClassMethodDecoratorRegistryInterface::class, $config['registry_service']);
+    }
+
+    private function registerControllerArgumentResolver(ContainerBuilder $container, array $config): void
+    {
+        $container->register(ApiBundle::CONTROLLER_ARGUMENT_DEFAULT_DECORATOR_REGISTRY_SERVICE_ID, ControllerArgumentDecoratorRegistry::class);
+
+        $container->setParameter(ApiBundle::CONTROLLER_ARGUMENT_DECORATOR_REGISTRY_SERVICE_PARAMETER, $config['registry_service']);
+
+        $container->setAlias(ControllerArgumentDecoratorRegistryInterface::class, $config['registry_service']);
     }
 }

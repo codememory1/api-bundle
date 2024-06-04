@@ -14,6 +14,7 @@ final class Configuration implements ConfigurationInterface
         $builder = new TreeBuilder('codememory_api');
         $rootNode = $builder->getRootNode();
 
+        $this->addDecoratorSection($rootNode);
         $this->addDtoSection($rootNode);
         $this->addEntityResponseControlSection($rootNode);
         $this->addAssertSection($rootNode);
@@ -23,6 +24,42 @@ final class Configuration implements ConfigurationInterface
         $this->addHttpErrorHandlerSection($rootNode);
 
         return $builder;
+    }
+
+    private function addDecoratorSection(ArrayNodeDefinition $node): void
+    {
+        $node
+            ->children()
+                ->arrayNode('decorators')
+                    ->addDefaultsIfNotSet()
+                    ->children()
+                        ->arrayNode('controller_argument_value')
+                            ->addDefaultsIfNotSet()
+                            ->children()
+                                ->scalarNode('registry_service')
+                                    ->defaultValue(ApiBundle::CONTROLLER_ARGUMENT_VALUE_RESOLVER_DEFAULT_DECORATOR_REGISTRY_SERVICE_ID)
+                                ->end()
+                            ->end()
+                        ->end()
+                        ->arrayNode('controller_class_method')
+                            ->addDefaultsIfNotSet()
+                            ->children()
+                                ->scalarNode('registry_service')
+                                    ->defaultValue(ApiBundle::CONTROLLER_CLASS_METHOD_DEFAULT_DECORATOR_REGISTRY_SERVICE_ID)
+                                ->end()
+                            ->end()
+                        ->end()
+                        ->arrayNode('controller_argument')
+                            ->addDefaultsIfNotSet()
+                            ->children()
+                                ->scalarNode('registry_service')
+                                    ->defaultValue(ApiBundle::CONTROLLER_ARGUMENT_DEFAULT_DECORATOR_REGISTRY_SERVICE_ID)
+                                ->end()
+                            ->end()
+                        ->end()
+                    ->end()
+                ->end()
+            ->end();
     }
 
     private function addDtoSection(ArrayNodeDefinition $node): void

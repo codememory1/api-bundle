@@ -3,19 +3,18 @@
 namespace Codememory\ApiBundle\DependencyInjection\Compiler;
 
 use Codememory\ApiBundle\ApiBundle;
-use Codememory\ApiBundle\AttributeHandler\Interfaces\AttributeHandlerInterface;
 use Symfony\Component\DependencyInjection\Compiler\CompilerPassInterface;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Reference;
 
-final class RegisterDecoratorPass implements CompilerPassInterface
+final class RegisterControllerArgumentDecoratorPass implements CompilerPassInterface
 {
     public function process(ContainerBuilder $container): void
     {
-        foreach ($container->findTaggedServiceIds(ApiBundle::DECORATOR_HANDLER_TAG) as $id => $tags) {
+        foreach ($container->findTaggedServiceIds(ApiBundle::CONTROLLER_ARGUMENT_DECORATOR_TAG) as $id => $tags) {
             $container
-                ->getDefinition(AttributeHandlerInterface::class)
-                ->addMethodCall('addDecoratorHandler', [new Reference($id)]);
+                ->getDefinition($container->getParameter(ApiBundle::CONTROLLER_ARGUMENT_DECORATOR_REGISTRY_SERVICE_PARAMETER))
+                ->addMethodCall('addHandler', [new Reference($id)]);
         }
     }
 }

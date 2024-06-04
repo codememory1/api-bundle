@@ -2,7 +2,7 @@
 
 namespace Codememory\ApiBundle\AttributeHandler\Interfaces;
 
-interface DecoratorInterface
+interface ControllerArgumentValueResolverDecoratorInterface
 {
     public function getHandler(): string;
 }
