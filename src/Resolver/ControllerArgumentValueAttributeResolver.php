@@ -21,9 +21,8 @@ final readonly class ControllerArgumentValueAttributeResolver implements ValueRe
     {
         if ($this->supports($argument)) {
             $value = [];
-            $attributes = array_filter($argument->getAttributes(), static fn (object $attribute) => $attribute instanceof ControllerArgumentValueResolverDecoratorInterface);
 
-            foreach ($attributes as $attribute) {
+            foreach ($this->getAttributes($argument) as $attribute) {
                 $value = $this->attributeHandler($attribute, $request, $argument);
             }
 
@@ -38,12 +37,24 @@ final readonly class ControllerArgumentValueAttributeResolver implements ValueRe
         return count($argument->getAttributes()) > 0;
     }
 
+    /**
+     * @return array<int, ControllerArgumentValueResolverDecoratorInterface>
+     */
+    private function getAttributes(ArgumentMetadata $argument): array
+    {
+        return array_filter($argument->getAttributes(), static fn (object $attribute) => $attribute instanceof ControllerArgumentValueResolverDecoratorInterface);
+    }
+
     private function attributeHandler(ControllerArgumentValueResolverDecoratorInterface $attribute, Request $request, ArgumentMetadata $argument): iterable
     {
         $handler = $this->controllerArgumentValueDecoratorRegistry->getHandler($attribute->getHandler());
 
         if (null === $handler) {
-            throw new DecoratorHandlerNotRegisteredException($attribute::class, $attribute->getHandler(), ApiBundle::CONTROLLER_ARGUMENT_VALUE_RESOLVER_DECORATOR_TAG);
+            throw new DecoratorHandlerNotRegisteredException(
+                $attribute::class,
+                $attribute->getHandler(),
+                ApiBundle::CONTROLLER_ARGUMENT_VALUE_RESOLVER_DECORATOR_TAG
+            );
         }
 
         return $this->controllerArgumentValueDecoratorRegistry->getHandler($attribute->getHandler())->handle($attribute, $request, $argument);
