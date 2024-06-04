@@ -19,17 +19,15 @@ final readonly class ControllerArgumentValueAttributeResolver implements ValueRe
 
     public function resolve(Request $request, ArgumentMetadata $argument): iterable
     {
-        if ($this->supports($argument)) {
-            $value = [];
+        $value = [];
 
+        if ($this->supports($argument)) {
             foreach ($this->getAttributes($argument) as $attribute) {
                 $value = $this->attributeHandler($attribute, $request, $argument);
             }
-
-            return $value;
         }
 
-        return [];
+        return $value;
     }
 
     private function supports(ArgumentMetadata $argument): bool
