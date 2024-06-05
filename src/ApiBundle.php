@@ -76,6 +76,9 @@ final class ApiBundle extends Bundle
 
     // Assert
     public const ASSERT_DEFAULT_VALIDATOR_SERVICE = 'codememory.assert.default_validator';
+    public const ASSERT_DEFAULT_ERROR_HANDLER_SERVICE = 'codememory.assert.default_error_handler';
+    public const ASSERT_ERROR_HANDLER_SERVICE = 'codememory.assert.error_handler';
+    public const ASSERT_ERROR_HANDLER_PARAMETER = 'codememory.assert.error_handler';
 
     // Others
     public const WORKER_OPTIONS_SERVICE_ID = 'codememory.multithreading.worker_options';

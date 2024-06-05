@@ -31,7 +31,9 @@ use Codememory\ApiBundle\QueryProcessor\PaginationQueryProcessor;
 use Codememory\ApiBundle\QueryProcessor\SortQueryProcessor;
 use Codememory\ApiBundle\Resolver\ControllerArgumentValueAttributeResolver;
 use Codememory\ApiBundle\ResponseSchema\Interfaces\ResponseSchemaFactoryInterface;
+use Codememory\ApiBundle\Validator\Assert\AssertErrorHandler;
 use Codememory\ApiBundle\Validator\Assert\AssertValidator;
+use Codememory\ApiBundle\Validator\Assert\Interfaces\AssertErrorHandlerInterface;
 use Codememory\ApiBundle\Validator\Assert\Interfaces\AssertValidatorInterface;
 use Codememory\ApiBundle\Validator\JsonSchema\JsonSchemaValidator;
 use Codememory\Dto\Collectors\BaseCollector as DTOBaseCollector;
@@ -52,6 +54,7 @@ use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Extension\Extension;
 use Symfony\Component\DependencyInjection\Loader\YamlFileLoader;
 use Symfony\Component\DependencyInjection\Reference;
+use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 
@@ -79,7 +82,7 @@ final class ApiExtension extends Extension
         $this->registerDefaultERCServices($container);
         $this->registerResponseSchema($config['response_schema'], $container);
         $this->registerHttpErrorHandler($config['http_error_handler'], $container);
-        $this->registerAssertServices($config['assert'], $container);
+        $this->registerAssertServices($container, $config['assert']);
         $this->registerWorkerOptions($config['threading']['worker_options'], $container);
         $this->registerProcessOptions($config['threading']['process_options'], $container);
         $this->registerPaginator($config['pagination'], $container);
@@ -164,13 +167,18 @@ final class ApiExtension extends Extension
         $container->setParameter(ApiBundle::ERC_DECORATOR_HANDLER_REGISTRAR_PARAMETER, $config['decorator_handler_registrar']['service']);
     }
 
-    private function registerAssertServices(array $config, ContainerBuilder $container): void
+    private function registerAssertServices(ContainerBuilder $container, array $config): void
     {
         $container
             ->register(ApiBundle::ASSERT_DEFAULT_VALIDATOR_SERVICE, AssertValidator::class)
-            ->setArgument('$validator', new Reference(ValidatorInterface::class));
+            ->setArgument('$validator', new Reference(ValidatorInterface::class))
+            ->setArgument('$mainErrorHandler', new Reference(AssertErrorHandlerInterface::class))
+            ->setArgument('$eventDispatcher', new Reference(EventDispatcherInterface::class));
 
-        $container->setAlias(AssertValidatorInterface::class, $config['validator']['service']);
+        $container->register(ApiBundle::ASSERT_DEFAULT_ERROR_HANDLER_SERVICE, AssertErrorHandler::class);
+
+        $container->setAlias(AssertValidatorInterface::class, $config['validator']);
+        $container->setAlias(AssertErrorHandlerInterface::class, $config['error_handler']);
     }
 
     private function registerWorkerOptions(array $options, ContainerBuilder $container): void
