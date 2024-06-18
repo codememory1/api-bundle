@@ -3,7 +3,9 @@
 namespace Codememory\ApiBundle;
 
 use Codememory\ApiBundle\DependencyInjection\ApiExtension;
-use Codememory\ApiBundle\DependencyInjection\Compiler\RegisterDecoratorPass;
+use Codememory\ApiBundle\DependencyInjection\Compiler\RegisterControllerArgumentDecoratorPass;
+use Codememory\ApiBundle\DependencyInjection\Compiler\RegisterControllerArgumentValueResolverDecoratorPass;
+use Codememory\ApiBundle\DependencyInjection\Compiler\RegisterControllerClassMethodDecoratorPass;
 use Codememory\ApiBundle\DependencyInjection\Compiler\RegisterDTODecoratorPass;
 use Codememory\ApiBundle\DependencyInjection\Compiler\RegisterDTOObjectPass;
 use Codememory\ApiBundle\DependencyInjection\Compiler\RegisterERCDecoratorPass;
@@ -66,23 +68,29 @@ final class ApiBundle extends Bundle
     public const PAGINATION_DEFAULT_OPTIONS_SERVICE = 'codememory.pagination.default_options';
     public const PAGINATION_DEFAULT_PAGINATOR = 'codememory.pagination.default_paginator';
 
-    // HTTP Error Handler
-    public const HTTP_ERROR_HANDLER_DEFAULT_CONFIGURATION = 'codememory.http_error_handler.default_configuration';
-
-    // Response Schema
-    public const RESPONSE_SCHEMA_DEFAULT_FACTORY = 'codememory.response_schema.factory';
-
     // Assert
     public const ASSERT_DEFAULT_VALIDATOR_SERVICE = 'codememory.assert.default_validator';
-
-    // Attribute Handler
-    public const DECORATOR_HANDLER_TAG = 'codememory.decorator.handler';
+    public const ASSERT_DEFAULT_ERROR_HANDLER_SERVICE = 'codememory.assert.default_error_handler';
+    public const ASSERT_ERROR_HANDLER_SERVICE = 'codememory.assert.error_handler';
+    public const ASSERT_ERROR_HANDLER_PARAMETER = 'codememory.assert.error_handler';
 
     // Others
     public const WORKER_OPTIONS_SERVICE_ID = 'codememory.multithreading.worker_options';
     public const PROCESS_OPTIONS_SERVICE_ID = 'codememory.multithreading.process_options';
     public const PROCESS_MANAGER_SERVICE_ID = 'codememory.multithreading.process_manager';
     public const JSON_SCHEMA_VALIDATOR_SERVICE_ID = 'codememory.validator.json';
+
+    // Decorators
+    public const CONTROLLER_ARGUMENT_VALUE_RESOLVER_DEFAULT_DECORATOR_REGISTRY_SERVICE_ID = 'codememory.decorator.registry.default_controller_argument_value_resolver';
+    public const CONTROLLER_ARGUMENT_VALUE_RESOLVER_DECORATOR_REGISTRY_SERVICE_PARAMETER = 'codememory.decorator.registry.controller_argument_value_resolver';
+    public const CONTROLLER_ARGUMENT_VALUE_RESOLVER_DECORATOR_TAG = 'codememory.decorator.controller_argument_value_resolver';
+    public const CONTROLLER_CLASS_METHOD_DEFAULT_DECORATOR_REGISTRY_SERVICE_ID = 'codememory.decorator.registry.default_controller_class_method';
+    public const CONTROLLER_CLASS_METHOD_DECORATOR_REGISTRY_SERVICE_PARAMETER = 'codememory.decorator.registry.controller_class_method';
+    public const CONTROLLER_CLASS_METHOD_DECORATOR_TAG = 'codememory.decorator.controller_class_method';
+    public const CONTROLLER_ARGUMENT_DEFAULT_DECORATOR_REGISTRY_SERVICE_ID = 'codememory.decorator.registry.default_controller_argument';
+    public const CONTROLLER_ARGUMENT_DECORATOR_REGISTRY_SERVICE_PARAMETER = 'codememory.decorator.registry.controller_argument';
+    public const CONTROLLER_ARGUMENT_DECORATOR_TAG = 'codememory.decorator.controller_argument';
+    public const HTTP_EXCEPTION_DEFAULT_CONFIGURATION_SERVICE_ID = 'codememory.http_exception.default_configuration';
 
     public function build(ContainerBuilder $container): void
     {
@@ -92,7 +100,9 @@ final class ApiBundle extends Bundle
         $container->addCompilerPass(new RegisterDTOObjectPass());
         $container->addCompilerPass(new RegisterERCDecoratorPass());
         $container->addCompilerPass(new RegisterERCObjectPass());
-        $container->addCompilerPass(new RegisterDecoratorPass());
+        $container->addCompilerPass(new RegisterControllerArgumentValueResolverDecoratorPass());
+        $container->addCompilerPass(new RegisterControllerClassMethodDecoratorPass());
+        $container->addCompilerPass(new RegisterControllerArgumentDecoratorPass());
     }
 
     #[Pure]

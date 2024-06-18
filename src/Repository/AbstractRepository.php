@@ -5,7 +5,11 @@ namespace Codememory\ApiBundle\Repository;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\ORM\QueryBuilder;
 use Doctrine\Persistence\ManagerRegistry;
+use Override;
 
+/**
+ * @template T as object
+ */
 abstract class AbstractRepository extends ServiceEntityRepository
 {
     protected ?string $entity = null;
@@ -16,14 +20,14 @@ abstract class AbstractRepository extends ServiceEntityRepository
         parent::__construct($registry, $this->entity);
     }
 
-    protected function generateQueryByProcess(int $processNumber, int $numberProcesses): QueryBuilder
+    protected function createQueryWithDistribution(int $current, int $total): QueryBuilder
     {
         $qb = $this->createQB();
         $count = $this->count([]);
 
         $qb
-            ->setFirstResult(($processNumber - 1) * ceil($count / $numberProcesses))
-            ->setMaxResults(ceil($count / $numberProcesses));
+            ->setFirstResult(($current - 1) * ceil($count / $total))
+            ->setMaxResults(ceil($count / $total));
 
         return $qb;
     }
@@ -31,5 +35,45 @@ abstract class AbstractRepository extends ServiceEntityRepository
     public function createQB(?string $indexBy = null): QueryBuilder
     {
         return $this->createQueryBuilder($this->alias, $indexBy);
+    }
+
+    /**
+     * @param      $id
+     * @param null $lockMode
+     * @param null $lockVersion
+     *
+     * @return null|T
+     */
+    #[Override]
+    public function find($id, $lockMode = null, $lockVersion = null): ?object
+    {
+        return parent::find($id, $lockMode, $lockVersion);
+    }
+
+    /**
+     * @return array<int, T>
+     */
+    #[Override]
+    public function findAll(): array
+    {
+        return parent::findAll();
+    }
+
+    /**
+     * @return array<int, T>
+     */
+    #[Override]
+    public function findBy(array $criteria, ?array $orderBy = null, $limit = null, $offset = null): array
+    {
+        return parent::findBy($criteria, $orderBy, $limit, $offset);
+    }
+
+    /**
+     * @return null|T
+     */
+    #[Override]
+    public function findOneBy(array $criteria, ?array $orderBy = null): ?object
+    {
+        return parent::findOneBy($criteria, $orderBy);
     }
 }

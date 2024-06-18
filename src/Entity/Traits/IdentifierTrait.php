@@ -10,7 +10,7 @@ trait IdentifierTrait
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column(type: Types::INTEGER)]
-    private ?int $id = null;
+    protected ?int $id = null;
 
     public function getId(): ?int
     {

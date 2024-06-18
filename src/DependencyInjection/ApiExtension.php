@@ -3,14 +3,18 @@
 namespace Codememory\ApiBundle\DependencyInjection;
 
 use Codememory\ApiBundle\ApiBundle;
-use Codememory\ApiBundle\AttributeHandler\AttributeHandler;
-use Codememory\ApiBundle\AttributeHandler\Interfaces\AttributeHandlerInterface;
-use Codememory\ApiBundle\EventListener\KernelException\HttpExceptionEventListener;
+use Codememory\ApiBundle\AttributeHandler\Interfaces\ControllerArgumentDecoratorRegistryInterface;
+use Codememory\ApiBundle\AttributeHandler\Interfaces\ControllerArgumentValueResolverDecoratorRegistryInterface;
+use Codememory\ApiBundle\AttributeHandler\Interfaces\ControllerClassMethodDecoratorRegistryInterface;
+use Codememory\ApiBundle\AttributeHandler\Registry\ControllerArgumentDecoratorRegistry;
+use Codememory\ApiBundle\AttributeHandler\Registry\ControllerArgumentValueResolverDecoratorRegistry;
+use Codememory\ApiBundle\AttributeHandler\Registry\ControllerClassMethodDecoratorRegistry;
 use Codememory\ApiBundle\Factory\DTOConfigurationFactory;
 use Codememory\ApiBundle\Factory\ERCConfigurationFactory;
-use Codememory\ApiBundle\Factory\ResponseSchemaFactory;
-use Codememory\ApiBundle\HttpErrorHandler\HttpErrorHandlerConfiguration;
-use Codememory\ApiBundle\HttpErrorHandler\Interfaces\HttpErrorHandlerConfigurationInterface;
+use Codememory\ApiBundle\Http\Exception\HttpExceptionConfiguration;
+use Codememory\ApiBundle\Http\Exception\Interfaces\HttpExceptionConfigurationInterface;
+use Codememory\ApiBundle\Http\ResponseBuilder\Interfaces\ResponseBuilderInterface;
+use Codememory\ApiBundle\Http\ResponseBuilder\ResponseBuilder;
 use Codememory\ApiBundle\JWT\Interfaces\JWTInterface;
 use Codememory\ApiBundle\JWT\JWT;
 use Codememory\ApiBundle\Multithreading\ProcessManager;
@@ -25,9 +29,10 @@ use Codememory\ApiBundle\Paginator\PaginatorOptions;
 use Codememory\ApiBundle\QueryProcessor\FilterQueryProcessor;
 use Codememory\ApiBundle\QueryProcessor\PaginationQueryProcessor;
 use Codememory\ApiBundle\QueryProcessor\SortQueryProcessor;
-use Codememory\ApiBundle\Resolver\ControllerEntityArgumentResolver;
-use Codememory\ApiBundle\ResponseSchema\Interfaces\ResponseSchemaFactoryInterface;
+use Codememory\ApiBundle\Resolver\ControllerArgumentValueAttributeResolver;
+use Codememory\ApiBundle\Validator\Assert\AssertErrorHandler;
 use Codememory\ApiBundle\Validator\Assert\AssertValidator;
+use Codememory\ApiBundle\Validator\Assert\Interfaces\AssertErrorHandlerInterface;
 use Codememory\ApiBundle\Validator\Assert\Interfaces\AssertValidatorInterface;
 use Codememory\ApiBundle\Validator\JsonSchema\JsonSchemaValidator;
 use Codememory\Dto\Collectors\BaseCollector as DTOBaseCollector;
@@ -41,15 +46,14 @@ use Codememory\EntityResponseControl\Factory\ExecutionContextFactory as ERCConte
 use Codememory\EntityResponseControl\Provider\ResponsePrototypePrivatePropertyProvider;
 use Codememory\EntityResponseControl\ResponseKeyNamingStrategy\ResponseKeyNamingStrategySnakeCase;
 use Codememory\Reflection\ReflectorManager;
-use Doctrine\ORM\EntityManagerInterface;
 use Exception;
 use Symfony\Component\Cache\Adapter\FilesystemAdapter;
 use Symfony\Component\Config\FileLocator;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
-use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\DependencyInjection\Extension\Extension;
 use Symfony\Component\DependencyInjection\Loader\YamlFileLoader;
 use Symfony\Component\DependencyInjection\Reference;
+use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 
@@ -67,26 +71,41 @@ final class ApiExtension extends Extension
     {
         $loader = new YamlFileLoader($container, new FileLocator(__DIR__ . '/../Resources/config'));
 
-        $loader->load('services.yaml');
+        $loader->load('api.yaml');
+        $loader->load('api_decorators.yaml');
+        $loader->load('api_event_listeners.yaml');
+        $loader->load('api_commands.yaml');
 
         $config = $this->processConfiguration(new Configuration(), $configs);
 
+        $this->registerExceptionHandler($container, $config['http']['exception']);
         $this->registerDTOParameters($config['dto'], $container);
         $this->registerDefaultDTOServices($config['dto'], $container);
         $this->registerERCParameters($config['erc'], $container);
         $this->registerDefaultERCServices($container);
-        $this->registerResponseSchema($config['response_schema'], $container);
-        $this->registerHttpErrorHandler($config['http_error_handler'], $container);
-        $this->registerAssertServices($config['assert'], $container);
+        $this->registerAssertServices($container, $config['assert']);
         $this->registerWorkerOptions($config['threading']['worker_options'], $container);
         $this->registerProcessOptions($config['threading']['process_options'], $container);
-        $this->registerAttributeHandler($container);
         $this->registerPaginator($config['pagination'], $container);
         $this->registerJWT($container);
         $this->registerProcessManager($container);
         $this->registerJsonSchemaValidator($container);
         $this->registerQueryProcessors($container);
         $this->registerResolver($container);
+
+        $this->registerResponseBuilder($container);
+        $this->registerControllerArgumentValueRegistryResolver($container, $config['decorators']['controller_argument_value']);
+        $this->registerControllerClassMethodRegistryResolver($container, $config['decorators']['controller_class_method']);
+        $this->registerControllerArgumentResolver($container, $config['decorators']['controller_argument']);
+    }
+
+    private function registerExceptionHandler(ContainerBuilder $container, array $config): void
+    {
+        $container
+            ->register(ApiBundle::HTTP_EXCEPTION_DEFAULT_CONFIGURATION_SERVICE_ID, HttpExceptionConfiguration::class)
+            ->addMethodCall('setConfig', [$config]);
+
+        $container->setAlias(HttpExceptionConfigurationInterface::class, $config['config_service']);
     }
 
     private function registerDefaultDTOServices(array $config, ContainerBuilder $container): void
@@ -97,7 +116,6 @@ final class ApiExtension extends Extension
         $container->register(ApiBundle::DTO_DEFAULT_PROPERTY_PROVIDER_SERVICE, DataTransferObjectPublicPropertyProvider::class);
         $container->register(ApiBundle::DTO_REFLECTOR_MANAGER_SERVICE, ReflectorManager::class);
         $container->register(ApiBundle::DTO_DEFAULT_DECORATOR_HANDLER_REGISTRAR_SERVICE, DecoratorHandlerRegistrar::class);
-
         $container
             ->register(ApiBundle::DTO_DEFAULT_CACHE_ADAPTER_SERVICE, FilesystemAdapter::class)
             ->setArguments([
@@ -159,13 +177,18 @@ final class ApiExtension extends Extension
         $container->setParameter(ApiBundle::ERC_DECORATOR_HANDLER_REGISTRAR_PARAMETER, $config['decorator_handler_registrar']['service']);
     }
 
-    private function registerAssertServices(array $config, ContainerBuilder $container): void
+    private function registerAssertServices(ContainerBuilder $container, array $config): void
     {
         $container
             ->register(ApiBundle::ASSERT_DEFAULT_VALIDATOR_SERVICE, AssertValidator::class)
-            ->setArgument('$validator', new Reference(ValidatorInterface::class));
+            ->setArgument('$validator', new Reference(ValidatorInterface::class))
+            ->setArgument('$mainErrorHandler', new Reference(AssertErrorHandlerInterface::class))
+            ->setArgument('$eventDispatcher', new Reference(EventDispatcherInterface::class));
 
-        $container->setAlias(AssertValidatorInterface::class, $config['validator']['service']);
+        $container->register(ApiBundle::ASSERT_DEFAULT_ERROR_HANDLER_SERVICE, AssertErrorHandler::class);
+
+        $container->setAlias(AssertValidatorInterface::class, $config['validator']);
+        $container->setAlias(AssertErrorHandlerInterface::class, $config['error_handler']);
     }
 
     private function registerWorkerOptions(array $options, ContainerBuilder $container): void
@@ -239,27 +262,6 @@ final class ApiExtension extends Extension
         $container->setAlias(PaginatorOptionsInterface::class, $config['options_service']);
     }
 
-    private function registerHttpErrorHandler(array $config, ContainerBuilder $container): void
-    {
-        $container
-            ->register(ApiBundle::HTTP_ERROR_HANDLER_DEFAULT_CONFIGURATION, HttpErrorHandlerConfiguration::class)
-            ->setArgument('$config', $config);
-
-        $container
-            ->register(HttpExceptionEventListener::class, HttpExceptionEventListener::class)
-            ->setArguments([
-                '$env' => $container->getParameter('kernel.environment'),
-                '$configuration' => new Reference($config['configuration_service']),
-                '$responseSchemaFactory' => new Reference(ResponseSchemaFactoryInterface::class)
-            ])
-            ->addTag('kernel.event_listener', [
-                'event' => 'kernel.exception',
-                'method' => 'onKernelException'
-            ]);
-
-        $container->setAlias(HttpErrorHandlerConfigurationInterface::class, $config['configuration_service']);
-    }
-
     private function registerQueryProcessors(ContainerBuilder $container): void
     {
         $container
@@ -284,34 +286,51 @@ final class ApiExtension extends Extension
             ]);
     }
 
-    private function registerAttributeHandler(ContainerBuilder $container): void
-    {
-        $container
-            ->register(AttributeHandlerInterface::class, AttributeHandler::class)
-            ->setArgument('$decoratorHandlers', []);
-    }
-
     private function registerResolver(ContainerBuilder $container): void
     {
         $container
-            ->register(ControllerEntityArgumentResolver::class, ControllerEntityArgumentResolver::class)
+            ->register(ControllerArgumentValueAttributeResolver::class, ControllerArgumentValueAttributeResolver::class)
             ->setArguments([
-                '$em' => new Reference(EntityManagerInterface::class),
-                '$container' => new Reference(ContainerInterface::class),
-                '$attributeHandler' => new Reference(AttributeHandlerInterface::class)
+                '$controllerArgumentValueDecoratorRegistry' => new Reference(ControllerArgumentValueResolverDecoratorRegistryInterface::class)
             ])
             ->addTag('controller.argument_value_resolver');
     }
 
-    private function registerResponseSchema(array $config, ContainerBuilder $container): void
+    private function registerResponseBuilder(ContainerBuilder $container): void
     {
-        $container->register(ApiBundle::RESPONSE_SCHEMA_DEFAULT_FACTORY, ResponseSchemaFactory::class);
-
-        $container->setAlias(ResponseSchemaFactoryInterface::class, $config['factory_service']);
+        $container
+            ->register(ResponseBuilderInterface::class, ResponseBuilder::class)
+            ->addArgument(new Reference(EventDispatcherInterface::class));
     }
 
     private function registerJWT(ContainerBuilder $container): void
     {
         $container->register(JWTInterface::class, JWT::class);
+    }
+
+    private function registerControllerArgumentValueRegistryResolver(ContainerBuilder $container, array $config): void
+    {
+        $container->register(ApiBundle::CONTROLLER_ARGUMENT_VALUE_RESOLVER_DEFAULT_DECORATOR_REGISTRY_SERVICE_ID, ControllerArgumentValueResolverDecoratorRegistry::class);
+        $container->setParameter(ApiBundle::CONTROLLER_ARGUMENT_VALUE_RESOLVER_DECORATOR_REGISTRY_SERVICE_PARAMETER, $config['registry_service']);
+
+        $container->setAlias(ControllerArgumentValueResolverDecoratorRegistryInterface::class, $config['registry_service']);
+    }
+
+    private function registerControllerClassMethodRegistryResolver(ContainerBuilder $container, array $config): void
+    {
+        $container->register(ApiBundle::CONTROLLER_CLASS_METHOD_DEFAULT_DECORATOR_REGISTRY_SERVICE_ID, ControllerClassMethodDecoratorRegistry::class);
+
+        $container->setParameter(ApiBundle::CONTROLLER_CLASS_METHOD_DECORATOR_REGISTRY_SERVICE_PARAMETER, $config['registry_service']);
+
+        $container->setAlias(ControllerClassMethodDecoratorRegistryInterface::class, $config['registry_service']);
+    }
+
+    private function registerControllerArgumentResolver(ContainerBuilder $container, array $config): void
+    {
+        $container->register(ApiBundle::CONTROLLER_ARGUMENT_DEFAULT_DECORATOR_REGISTRY_SERVICE_ID, ControllerArgumentDecoratorRegistry::class);
+
+        $container->setParameter(ApiBundle::CONTROLLER_ARGUMENT_DECORATOR_REGISTRY_SERVICE_PARAMETER, $config['registry_service']);
+
+        $container->setAlias(ControllerArgumentDecoratorRegistryInterface::class, $config['registry_service']);
     }
 }

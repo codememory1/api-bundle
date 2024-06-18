@@ -14,15 +14,78 @@ final class Configuration implements ConfigurationInterface
         $builder = new TreeBuilder('codememory_api');
         $rootNode = $builder->getRootNode();
 
+        $this->addDecoratorSection($rootNode);
+        $this->httpSection($rootNode);
         $this->addDtoSection($rootNode);
         $this->addEntityResponseControlSection($rootNode);
         $this->addAssertSection($rootNode);
         $this->addPaginationSection($rootNode);
         $this->addThreadingSection($rootNode);
-        $this->addResponseSchemaSection($rootNode);
-        $this->addHttpErrorHandlerSection($rootNode);
 
         return $builder;
+    }
+
+    private function addDecoratorSection(ArrayNodeDefinition $node): void
+    {
+        $node
+            ->children()
+                ->arrayNode('decorators')
+                    ->addDefaultsIfNotSet()
+                    ->children()
+                        ->arrayNode('controller_argument_value')
+                            ->addDefaultsIfNotSet()
+                            ->children()
+                                ->scalarNode('registry_service')
+                                    ->defaultValue(ApiBundle::CONTROLLER_ARGUMENT_VALUE_RESOLVER_DEFAULT_DECORATOR_REGISTRY_SERVICE_ID)
+                                ->end()
+                            ->end()
+                        ->end()
+                        ->arrayNode('controller_class_method')
+                            ->addDefaultsIfNotSet()
+                            ->children()
+                                ->scalarNode('registry_service')
+                                    ->defaultValue(ApiBundle::CONTROLLER_CLASS_METHOD_DEFAULT_DECORATOR_REGISTRY_SERVICE_ID)
+                                ->end()
+                            ->end()
+                        ->end()
+                        ->arrayNode('controller_argument')
+                            ->addDefaultsIfNotSet()
+                            ->children()
+                                ->scalarNode('registry_service')
+                                    ->defaultValue(ApiBundle::CONTROLLER_ARGUMENT_DEFAULT_DECORATOR_REGISTRY_SERVICE_ID)
+                                ->end()
+                            ->end()
+                        ->end()
+                    ->end()
+                ->end()
+            ->end();
+    }
+
+    private function httpSection(ArrayNodeDefinition $node): void
+    {
+        $node
+            ->children()
+                ->arrayNode('http')
+                    ->addDefaultsIfNotSet()
+                    ->children()
+                        ->arrayNode('exception')
+                            ->children()
+                                ->scalarNode('config_service')
+                                    ->cannotBeEmpty()
+                                    ->defaultValue(ApiBundle::HTTP_EXCEPTION_DEFAULT_CONFIGURATION_SERVICE_ID)
+                                    ->info('New configuration service ID')
+                                ->end()
+                                ->arrayNode('exclude')
+                                    ->scalarPrototype()
+                                        ->cannotBeEmpty()
+                                        ->info('Namespace exceptions that should be ignored in processing')
+                                    ->end()
+                                ->end()
+                            ->end()
+                        ->end()
+                    ->end()
+                ->end()
+            ->end();
     }
 
     private function addDtoSection(ArrayNodeDefinition $node): void
@@ -168,15 +231,15 @@ final class Configuration implements ConfigurationInterface
                 ->arrayNode('assert')
                     ->addDefaultsIfNotSet()
                     ->children()
-                        ->arrayNode('validator')
-                            ->addDefaultsIfNotSet()
-                            ->children()
-                                ->scalarNode('service')
-                                    ->cannotBeEmpty()
-                                    ->defaultValue(ApiBundle::ASSERT_DEFAULT_VALIDATOR_SERVICE)
-                                    ->info('Validator service')
-                                ->end()
-                            ->end()
+                        ->scalarNode('validator')
+                            ->cannotBeEmpty()
+                            ->defaultValue(ApiBundle::ASSERT_DEFAULT_VALIDATOR_SERVICE)
+                            ->info('Validator service')
+                        ->end()
+                        ->scalarNode('error_handler')
+                            ->cannotBeEmpty()
+                            ->defaultValue(ApiBundle::ASSERT_DEFAULT_ERROR_HANDLER_SERVICE)
+                            ->info('Validation error handler service')
                         ->end()
                     ->end()
                 ->end()
@@ -238,88 +301,6 @@ final class Configuration implements ConfigurationInterface
                                 ->integerNode('max_memory_usage')
                                     ->defaultValue(100 * (1024 * 1024)) // 100MB
                                     ->info('The maximum number of bytes a process can use')
-                                ->end()
-                            ->end()
-                        ->end()
-                    ->end()
-                ->end()
-            ->end();
-    }
-
-    private function addResponseSchemaSection(ArrayNodeDefinition $node): void
-    {
-        $node
-            ->children()
-                ->arrayNode('response_schema')
-                    ->addDefaultsIfNotSet()
-                    ->children()
-                        ->scalarNode('factory_service')
-                            ->cannotBeEmpty()
-                            ->defaultValue(ApiBundle::RESPONSE_SCHEMA_DEFAULT_FACTORY)
-                            ->info('Response Schema Factory')
-                        ->end()
-                    ->end()
-                ->end()
-            ->end();
-    }
-
-    private function addHttpErrorHandlerSection(ArrayNodeDefinition $node): void
-    {
-        $node
-            ->children()
-                ->arrayNode('http_error_handler')
-                    ->addDefaultsIfNotSet()
-                    ->children()
-                        ->scalarNode('configuration_service')
-                            ->cannotBeEmpty()
-                            ->defaultValue(ApiBundle::HTTP_ERROR_HANDLER_DEFAULT_CONFIGURATION)
-                            ->info('Configuration service for complete redefinition of codes')
-                        ->end()
-                        ->arrayNode('403')
-                            ->children()
-                                ->scalarNode('message')
-                                    ->defaultValue('Access is denied')
-                                    ->info('Message to be displayed')
-                                ->end()
-                                ->integerNode('platform_code')
-                                    ->defaultValue(-1)
-                                    ->info('Custom platform code')
-                                ->end()
-                            ->end()
-                        ->end()
-                        ->arrayNode('404')
-                            ->children()
-                                ->scalarNode('message')
-                                    ->defaultValue('Page not found')
-                                    ->info('Message to be displayed')
-                                ->end()
-                                ->integerNode('platform_code')
-                                    ->defaultValue(-1)
-                                    ->info('Custom platform code')
-                                ->end()
-                            ->end()
-                        ->end()
-                        ->arrayNode('405')
-                            ->children()
-                                ->scalarNode('message')
-                                    ->defaultValue('Route does not support this method')
-                                    ->info('Message to be displayed')
-                                ->end()
-                                ->integerNode('platform_code')
-                                    ->defaultValue(-1)
-                                    ->info('Custom platform code')
-                                ->end()
-                            ->end()
-                        ->end()
-                        ->arrayNode('500')
-                            ->children()
-                                ->scalarNode('message')
-                                    ->defaultValue('Server Error')
-                                    ->info('Message to be displayed')
-                                ->end()
-                                ->integerNode('platform_code')
-                                    ->defaultValue(-1)
-                                    ->info('Custom platform code')
                                 ->end()
                             ->end()
                         ->end()
