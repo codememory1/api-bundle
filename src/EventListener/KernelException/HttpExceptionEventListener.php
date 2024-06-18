@@ -2,23 +2,22 @@
 
 namespace Codememory\ApiBundle\EventListener\KernelException;
 
-use Codememory\ApiBundle\Exceptions\HttpException;
-use Codememory\ApiBundle\HttpErrorHandler\Interfaces\HttpErrorHandlerConfigurationInterface;
-use Codememory\ApiBundle\ResponseSchema\Interfaces\ResponseSchemaFactoryInterface;
-use Codememory\ApiBundle\ResponseSchema\Interfaces\ResponseSchemaInterface;
-use Codememory\ApiBundle\ResponseSchema\View\MessageView;
+use Codememory\ApiBundle\Http\Exception\Interfaces\HttpExceptionConfigurationInterface;
+use Codememory\ApiBundle\Http\ResponseBuilder\Components\Error\ErrorComponent;
+use Codememory\ApiBundle\Http\ResponseBuilder\Components\Status\StatusComponent;
+use Codememory\ApiBundle\Http\ResponseBuilder\Interfaces\ResponseBuilderInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
+use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Event\ExceptionEvent;
-use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
-use Symfony\Component\HttpKernel\Exception\MethodNotAllowedHttpException;
-use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
+use Symfony\Component\HttpKernel\Exception\HttpExceptionInterface as SymfonyHttpExceptionInterface;
 
 final readonly class HttpExceptionEventListener
 {
     public function __construct(
-        private HttpErrorHandlerConfigurationInterface $configuration,
-        private ResponseSchemaFactoryInterface $responseSchemaFactory,
+        private ResponseBuilderInterface $responseBuilder,
+        private HttpExceptionConfigurationInterface $configuration,
         private string $env,
+        private bool $debug
     ) {
     }
 
@@ -26,51 +25,33 @@ final readonly class HttpExceptionEventListener
     {
         $exception = $event->getThrowable();
 
-        if (PHP_SAPI !== 'cli') {
-            $responseSchema = $this->responseSchemaFactory->createResponseSchema();
-
-            if ($exception instanceof HttpException) {
-                $responseSchema->setHttpCode($exception->httpCode);
-                $responseSchema->setPlatformCode($exception->platformCode);
-                $responseSchema->setView(new MessageView($exception->getMessage(), true, $exception->messageParameters));
-
-                $this->jsonResponse($event, $responseSchema);
-            } else if ($exception instanceof NotFoundHttpException) {
-                $responseSchema->setHttpCode(404);
-                $responseSchema->setPlatformCode($this->configuration->getNotFoundPlatformCode());
-                $responseSchema->setView(new MessageView($this->configuration->getNotFoundMessage(), true));
-
-                $this->jsonResponse($event, $responseSchema);
-            } else if ($exception instanceof MethodNotAllowedHttpException) {
-                $responseSchema->setHttpCode(405);
-                $responseSchema->setPlatformCode($this->configuration->getMethodNotAllowedPlatformCode());
-                $responseSchema->setView(new MessageView($this->configuration->getMethodNotAllowedMessage(), true));
-
-                $this->jsonResponse($event, $responseSchema);
-            } else if ($exception instanceof AccessDeniedHttpException) {
-                $responseSchema->setHttpCode(403);
-                $responseSchema->setPlatformCode($this->configuration->getAccessIsDeniedPlatformCode());
-                $responseSchema->setView(new MessageView($this->configuration->getAccessIsDeniedMessage(), true));
-
-                $this->jsonResponse($event, $responseSchema);
-            } else {
-                if ('dev' !== $this->env) {
-                    $responseSchema->setHttpCode(500);
-                    $responseSchema->setPlatformCode($this->configuration->getServerErrorPlatformCode());
-                    $responseSchema->setView(new MessageView($this->configuration->getServerErrorMessage(), true));
-
-                    $this->jsonResponse($event, $responseSchema);
-                }
+        if ($this->canBeProcessed() && !in_array($exception::class, $this->configuration->getExcludedExceptions(), true)) {
+            if ($exception instanceof SymfonyHttpExceptionInterface) {
+                $this->handler($event, $exception->getStatusCode(), $exception->getMessage(), $exception->getHeaders());
             }
         }
     }
 
-    private function jsonResponse(ExceptionEvent $event, ResponseSchemaInterface $responseSchema): void
+    private function canBeProcessed(): bool
     {
-        $event->setResponse(new JsonResponse(
-            $responseSchema->toArray(),
-            $responseSchema->getHttpCode(),
-            $responseSchema->getHeaders()
-        ));
+        return PHP_SAPI !== 'cli' || $this->isDev() || $this->debug;
+    }
+
+    private function isDev(): bool
+    {
+        return str_starts_with($this->env, 'dev');
+    }
+
+    private function handler(ExceptionEvent $event, int $statusCode, string $message, array $headers = []): void
+    {
+        $this->buildResponse($statusCode, $message);
+
+        $event->setResponse(new JsonResponse($this->responseBuilder->build(), $statusCode, $headers));
+    }
+
+    private function buildResponse(int $statusCode, string $message): void
+    {
+        $this->responseBuilder->addComponent(new StatusComponent('error'));
+        $this->responseBuilder->addComponent(new ErrorComponent(Response::$statusTexts[$statusCode], $message));
     }
 }

@@ -9,12 +9,12 @@ use Codememory\ApiBundle\AttributeHandler\Interfaces\ControllerClassMethodDecora
 use Codememory\ApiBundle\AttributeHandler\Registry\ControllerArgumentDecoratorRegistry;
 use Codememory\ApiBundle\AttributeHandler\Registry\ControllerArgumentValueResolverDecoratorRegistry;
 use Codememory\ApiBundle\AttributeHandler\Registry\ControllerClassMethodDecoratorRegistry;
-use Codememory\ApiBundle\EventListener\KernelException\HttpExceptionEventListener;
 use Codememory\ApiBundle\Factory\DTOConfigurationFactory;
 use Codememory\ApiBundle\Factory\ERCConfigurationFactory;
-use Codememory\ApiBundle\Factory\ResponseSchemaFactory;
-use Codememory\ApiBundle\HttpErrorHandler\HttpErrorHandlerConfiguration;
-use Codememory\ApiBundle\HttpErrorHandler\Interfaces\HttpErrorHandlerConfigurationInterface;
+use Codememory\ApiBundle\Http\Exception\HttpExceptionConfiguration;
+use Codememory\ApiBundle\Http\Exception\Interfaces\HttpExceptionConfigurationInterface;
+use Codememory\ApiBundle\Http\ResponseBuilder\Interfaces\ResponseBuilderInterface;
+use Codememory\ApiBundle\Http\ResponseBuilder\ResponseBuilder;
 use Codememory\ApiBundle\JWT\Interfaces\JWTInterface;
 use Codememory\ApiBundle\JWT\JWT;
 use Codememory\ApiBundle\Multithreading\ProcessManager;
@@ -30,7 +30,6 @@ use Codememory\ApiBundle\QueryProcessor\FilterQueryProcessor;
 use Codememory\ApiBundle\QueryProcessor\PaginationQueryProcessor;
 use Codememory\ApiBundle\QueryProcessor\SortQueryProcessor;
 use Codememory\ApiBundle\Resolver\ControllerArgumentValueAttributeResolver;
-use Codememory\ApiBundle\ResponseSchema\Interfaces\ResponseSchemaFactoryInterface;
 use Codememory\ApiBundle\Validator\Assert\AssertErrorHandler;
 use Codememory\ApiBundle\Validator\Assert\AssertValidator;
 use Codememory\ApiBundle\Validator\Assert\Interfaces\AssertErrorHandlerInterface;
@@ -72,16 +71,18 @@ final class ApiExtension extends Extension
     {
         $loader = new YamlFileLoader($container, new FileLocator(__DIR__ . '/../Resources/config'));
 
-        $loader->load('services.yaml');
+        $loader->load('api.yaml');
+        $loader->load('api_decorators.yaml');
+        $loader->load('api_event_listeners.yaml');
+        $loader->load('api_commands.yaml');
 
         $config = $this->processConfiguration(new Configuration(), $configs);
 
+        $this->registerExceptionHandler($container, $config['http']['exception']);
         $this->registerDTOParameters($config['dto'], $container);
         $this->registerDefaultDTOServices($config['dto'], $container);
         $this->registerERCParameters($config['erc'], $container);
         $this->registerDefaultERCServices($container);
-        $this->registerResponseSchema($config['response_schema'], $container);
-        $this->registerHttpErrorHandler($config['http_error_handler'], $container);
         $this->registerAssertServices($container, $config['assert']);
         $this->registerWorkerOptions($config['threading']['worker_options'], $container);
         $this->registerProcessOptions($config['threading']['process_options'], $container);
@@ -92,9 +93,19 @@ final class ApiExtension extends Extension
         $this->registerQueryProcessors($container);
         $this->registerResolver($container);
 
+        $this->registerResponseBuilder($container);
         $this->registerControllerArgumentValueRegistryResolver($container, $config['decorators']['controller_argument_value']);
         $this->registerControllerClassMethodRegistryResolver($container, $config['decorators']['controller_class_method']);
         $this->registerControllerArgumentResolver($container, $config['decorators']['controller_argument']);
+    }
+
+    private function registerExceptionHandler(ContainerBuilder $container, array $config): void
+    {
+        $container
+            ->register(ApiBundle::HTTP_EXCEPTION_DEFAULT_CONFIGURATION_SERVICE_ID, HttpExceptionConfiguration::class)
+            ->addMethodCall('setConfig', [$config]);
+
+        $container->setAlias(HttpExceptionConfigurationInterface::class, $config['config_service']);
     }
 
     private function registerDefaultDTOServices(array $config, ContainerBuilder $container): void
@@ -105,7 +116,6 @@ final class ApiExtension extends Extension
         $container->register(ApiBundle::DTO_DEFAULT_PROPERTY_PROVIDER_SERVICE, DataTransferObjectPublicPropertyProvider::class);
         $container->register(ApiBundle::DTO_REFLECTOR_MANAGER_SERVICE, ReflectorManager::class);
         $container->register(ApiBundle::DTO_DEFAULT_DECORATOR_HANDLER_REGISTRAR_SERVICE, DecoratorHandlerRegistrar::class);
-
         $container
             ->register(ApiBundle::DTO_DEFAULT_CACHE_ADAPTER_SERVICE, FilesystemAdapter::class)
             ->setArguments([
@@ -252,27 +262,6 @@ final class ApiExtension extends Extension
         $container->setAlias(PaginatorOptionsInterface::class, $config['options_service']);
     }
 
-    private function registerHttpErrorHandler(array $config, ContainerBuilder $container): void
-    {
-        $container
-            ->register(ApiBundle::HTTP_ERROR_HANDLER_DEFAULT_CONFIGURATION, HttpErrorHandlerConfiguration::class)
-            ->setArgument('$config', $config);
-
-        $container
-            ->register(HttpExceptionEventListener::class, HttpExceptionEventListener::class)
-            ->setArguments([
-                '$env' => $container->getParameter('kernel.environment'),
-                '$configuration' => new Reference($config['configuration_service']),
-                '$responseSchemaFactory' => new Reference(ResponseSchemaFactoryInterface::class)
-            ])
-            ->addTag('kernel.event_listener', [
-                'event' => 'kernel.exception',
-                'method' => 'onKernelException'
-            ]);
-
-        $container->setAlias(HttpErrorHandlerConfigurationInterface::class, $config['configuration_service']);
-    }
-
     private function registerQueryProcessors(ContainerBuilder $container): void
     {
         $container
@@ -307,11 +296,11 @@ final class ApiExtension extends Extension
             ->addTag('controller.argument_value_resolver');
     }
 
-    private function registerResponseSchema(array $config, ContainerBuilder $container): void
+    private function registerResponseBuilder(ContainerBuilder $container): void
     {
-        $container->register(ApiBundle::RESPONSE_SCHEMA_DEFAULT_FACTORY, ResponseSchemaFactory::class);
-
-        $container->setAlias(ResponseSchemaFactoryInterface::class, $config['factory_service']);
+        $container
+            ->register(ResponseBuilderInterface::class, ResponseBuilder::class)
+            ->addArgument(new Reference(EventDispatcherInterface::class));
     }
 
     private function registerJWT(ContainerBuilder $container): void

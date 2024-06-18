@@ -2,8 +2,10 @@
 
 namespace Codememory\ApiBundle\Http\ResponseBuilder;
 
+use Codememory\ApiBundle\Event\ResponsePreBuildEvent;
 use Codememory\ApiBundle\Http\ResponseBuilder\Interfaces\ResponseBuilderInterface;
 use Codememory\ApiBundle\Http\ResponseBuilder\Interfaces\ResponseComponentInterface;
+use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 
 class ResponseBuilder implements ResponseBuilderInterface
 {
@@ -11,6 +13,29 @@ class ResponseBuilder implements ResponseBuilderInterface
      * @var array<string, ResponseComponentInterface>
      */
     protected array $components = [];
+
+    public function __construct(
+        private readonly EventDispatcherInterface $eventDispatcher
+    ) {
+    }
+
+    /**
+     * @param array<string, ResponseComponentInterface> $components
+     */
+    protected function doBuild(array $components): array
+    {
+        $response = [];
+
+        foreach ($components as $component) {
+            $response[$component->getKey()] = $component->getValue();
+
+            if (count($component->getSubcomponents()) > 0) {
+                $response[$component->getKey()] += $this->doBuild($component->getSubcomponents());
+            }
+        }
+
+        return $response;
+    }
 
     public function getComponents(): array
     {
@@ -42,24 +67,8 @@ class ResponseBuilder implements ResponseBuilderInterface
 
     public function build(): array
     {
+        $this->eventDispatcher->dispatch(new ResponsePreBuildEvent($this), ResponsePreBuildEvent::NAME);
+
         return $this->doBuild($this->components);
-    }
-
-    /**
-     * @param array<string, ResponseComponentInterface> $components
-     */
-    private function doBuild(array $components): array
-    {
-        $response = [];
-
-        foreach ($components as $component) {
-            $response[$component->getKey()] = $component->getValue();
-
-            if (count($component->getSubcomponents()) > 0) {
-                $response[$component->getKey()] += $this->doBuild($component->getSubcomponents());
-            }
-        }
-
-        return $response;
     }
 }

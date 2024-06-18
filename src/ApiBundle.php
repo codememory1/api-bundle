@@ -68,12 +68,6 @@ final class ApiBundle extends Bundle
     public const PAGINATION_DEFAULT_OPTIONS_SERVICE = 'codememory.pagination.default_options';
     public const PAGINATION_DEFAULT_PAGINATOR = 'codememory.pagination.default_paginator';
 
-    // HTTP Error Handler
-    public const HTTP_ERROR_HANDLER_DEFAULT_CONFIGURATION = 'codememory.http_error_handler.default_configuration';
-
-    // Response Schema
-    public const RESPONSE_SCHEMA_DEFAULT_FACTORY = 'codememory.response_schema.factory';
-
     // Assert
     public const ASSERT_DEFAULT_VALIDATOR_SERVICE = 'codememory.assert.default_validator';
     public const ASSERT_DEFAULT_ERROR_HANDLER_SERVICE = 'codememory.assert.default_error_handler';
@@ -96,6 +90,7 @@ final class ApiBundle extends Bundle
     public const CONTROLLER_ARGUMENT_DEFAULT_DECORATOR_REGISTRY_SERVICE_ID = 'codememory.decorator.registry.default_controller_argument';
     public const CONTROLLER_ARGUMENT_DECORATOR_REGISTRY_SERVICE_PARAMETER = 'codememory.decorator.registry.controller_argument';
     public const CONTROLLER_ARGUMENT_DECORATOR_TAG = 'codememory.decorator.controller_argument';
+    public const HTTP_EXCEPTION_DEFAULT_CONFIGURATION_SERVICE_ID = 'codememory.http_exception.default_configuration';
 
     public function build(ContainerBuilder $container): void
     {

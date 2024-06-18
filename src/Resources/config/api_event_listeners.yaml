@@ -1,0 +1,29 @@
+services:
+  _defaults:
+    autowire: true
+    autoconfigure: true
+
+  Codememory\ApiBundle\EventListener\KernelControllerViewEventListener:
+    tags:
+      - { name: kernel.event_listener, event: kernel.view, method: onKernelView }
+
+  Codememory\ApiBundle\EventListener\KernelController\AttributeControllerEventListener:
+    tags:
+      - { name: kernel.event_listener, event: kernel.controller, method: onKernelController }
+
+  Codememory\ApiBundle\EventListener\KernelControllerArguments\EventDispatchArgumentEventListener:
+    tags:
+      - { name: kernel.event_listener, event: kernel.controller_arguments, method: onKernelControllerArguments }
+
+  Codememory\ApiBundle\EventListener\ControllerArgument\AttributeHandlerEventListener:
+    tags:
+      - { name: kernel.event_listener, event: codememory.controller_argument, method: onControllerArgument }
+
+  Codememory\ApiBundle\EventListener\KernelException\HttpExceptionEventListener:
+    arguments:
+      - '@Codememory\ApiBundle\Http\ResponseBuilder\Interfaces\ResponseBuilderInterface'
+      - '@Codememory\ApiBundle\Http\Exception\Interfaces\HttpExceptionConfigurationInterface'
+      - '%env(APP_ENV)%'
+      - '%env(bool:APP_DEBUG)%'
+    tags:
+      - { name: kernel.event_listener, event: kernel.exception, method: onKernelException }

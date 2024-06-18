@@ -1,0 +1,40 @@
+services:
+  _defaults:
+    autowire: true
+    autoconfigure: true
+
+  Codememory\ApiBundle\Decorator\ControllerArgumentValueResolver\:
+    resource: '../../Decorator/ControllerArgumentValueResolver/*Handler.php'
+    autowire: true
+    tags:
+      - { name: codememory.decorator.controller_argument_value_resolver }
+
+  Codememory\ApiBundle\Decorator\ControllerArgument\:
+    resource: '../../Decorator/ControllerArgument/*Handler.php'
+    autowire: true
+    tags:
+      - { name: codememory.decorator.controller_argument }
+
+  Codememory\ApiBundle\Decorator\DTO\HttpPatchHandler:
+    autowire: true
+    tags:
+      - { name: codememory.dto.decorator }
+
+  Codememory\ApiBundle\Decorator\DTO\ToEntityHandler:
+    autowire: true
+    tags:
+      - { name: codememory.dto.decorator }
+
+  Codememory\ApiBundle\Decorator\DTO\ToListEntitiesHandler:
+    autowire: true
+    tags:
+      - { name: codememory.dto.decorator }
+
+  Codememory\ApiBundle\Decorator\DTO\FileExpectedHandler:
+    tags:
+      - { name: codememory.dto.decorator }
+
+  Codememory\ApiBundle\Decorator\ERC\CallbackWithEntityRepositoryHandler:
+    autowire: true
+    tags:
+      - { name: codememory.erc.decorator }

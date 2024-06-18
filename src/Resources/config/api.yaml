@@ -1,0 +1,5 @@
+services:
+  Symfony\Component\DependencyInjection\ContainerInterface: '@service_container'
+
+  Symfony\Component\HttpKernel\ControllerMetadata\ArgumentMetadataFactoryInterface:
+    class: Symfony\Component\HttpKernel\ControllerMetadata\ArgumentMetadataFactory

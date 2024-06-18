@@ -8,7 +8,7 @@ use Codememory\ApiBundle\Http\ResponseBuilder\Interfaces\ResponseComponentInterf
 use Codememory\ApiBundle\Http\ResponseBuilder\Interfaces\ResponseSubcomponentInterface;
 use Override;
 
-class MessagesComponent extends AbstractComponent implements ResponseComponentInterface
+class GroupMessages extends AbstractComponent implements ResponseComponentInterface
 {
     public const string NAME = 'messages';
     public const string SUCCESS_TYPE = 'success';

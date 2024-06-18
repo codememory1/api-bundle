@@ -12,7 +12,7 @@ class ApiVersionMetaSubcomponent extends AbstractComponent implements ResponseSu
     public const string NAME = 'api_version';
 
     public function __construct(
-        private readonly float $version
+        private readonly string $version
     ) {
     }
 
@@ -27,7 +27,7 @@ class ApiVersionMetaSubcomponent extends AbstractComponent implements ResponseSu
         throw new ResponseComponentDoesNotSupportAddingSubcomponentException(self::class);
     }
 
-    public function getValue(): float
+    public function getValue(): string
     {
         return "v{$this->version}";
     }
