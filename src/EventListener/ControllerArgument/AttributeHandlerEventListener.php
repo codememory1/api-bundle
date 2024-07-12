@@ -28,7 +28,7 @@ final readonly class AttributeHandlerEventListener
             $handler = $this->controllerArgumentDecoratorRegistry->getHandler($attribute->getHandler());
 
             if (null === $handler) {
-                throw new DecoratorHandlerNotRegisteredException($attribute::class, $attribute->getHandler(), ApiBundle::CONTROLLER_ARGUMENT_DECORATOR_TAG);
+                throw new DecoratorHandlerNotRegisteredException($attribute::class, $attribute->getHandler(), ApiBundle::DECORATOR_TAG);
             }
 
             $handler->handle($attribute, $event->argumentMetadata, $event->controller, $event->argumentValue);

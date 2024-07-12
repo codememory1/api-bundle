@@ -44,13 +44,15 @@ final readonly class HttpExceptionEventListener
 
     private function handler(ExceptionEvent $event, int $statusCode, string $message, array $headers = []): void
     {
-        $this->buildResponse($statusCode, $message);
+        $this->buildResponse($statusCode, $message, $headers);
 
         $event->setResponse(new JsonResponse($this->responseBuilder->build(), $statusCode, $headers));
     }
 
-    private function buildResponse(int $statusCode, string $message): void
+    private function buildResponse(int $statusCode, string $message, array $headers = []): void
     {
+        $this->responseBuilder->setStatus($statusCode);
+        $this->responseBuilder->setHeaders($headers);
         $this->responseBuilder->addComponent(new StatusComponent('error'));
         $this->responseBuilder->addComponent(new ErrorComponent(Response::$statusTexts[$statusCode], $message));
     }

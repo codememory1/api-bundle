@@ -48,7 +48,7 @@ final readonly class ControllerArgumentValueAttributeResolver implements ValueRe
         $handler = $this->controllerArgumentValueDecoratorRegistry->getHandler($attribute->getHandler());
 
         if (null === $handler) {
-            throw new DecoratorHandlerNotRegisteredException($attribute::class, $attribute->getHandler(), ApiBundle::CONTROLLER_ARGUMENT_VALUE_RESOLVER_DECORATOR_TAG);
+            throw new DecoratorHandlerNotRegisteredException($attribute::class, $attribute->getHandler(), ApiBundle::DECORATOR_TAG);
         }
 
         return $this->controllerArgumentValueDecoratorRegistry->getHandler($attribute->getHandler())->handle($attribute, $request, $argument);

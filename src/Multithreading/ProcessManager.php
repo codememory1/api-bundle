@@ -65,9 +65,9 @@ class ProcessManager
     {
         while (true) {
             foreach ($this->activatedProcesses as $id => $pid) {
-                $result = pcntl_waitpid($pid, $status, WNOHANG);
+                $statusChildrenProcess = pcntl_waitpid($pid, $status, WNOHANG);
 
-                if (-1 === $result || 0 < $result) {
+                if (-1 === $statusChildrenProcess || 0 < $statusChildrenProcess) {
                     unset($this->activatedProcesses[$id]);
                 }
             }

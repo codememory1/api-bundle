@@ -9,8 +9,6 @@ use Codememory\ApiBundle\AttributeHandler\Interfaces\ControllerClassMethodDecora
 use Codememory\ApiBundle\AttributeHandler\Registry\ControllerArgumentDecoratorRegistry;
 use Codememory\ApiBundle\AttributeHandler\Registry\ControllerArgumentValueResolverDecoratorRegistry;
 use Codememory\ApiBundle\AttributeHandler\Registry\ControllerClassMethodDecoratorRegistry;
-use Codememory\ApiBundle\Factory\DTOConfigurationFactory;
-use Codememory\ApiBundle\Factory\ERCConfigurationFactory;
 use Codememory\ApiBundle\Http\Exception\HttpExceptionConfiguration;
 use Codememory\ApiBundle\Http\Exception\Interfaces\HttpExceptionConfigurationInterface;
 use Codememory\ApiBundle\Http\ResponseBuilder\Interfaces\ResponseBuilderInterface;
@@ -35,19 +33,7 @@ use Codememory\ApiBundle\Validator\Assert\AssertValidator;
 use Codememory\ApiBundle\Validator\Assert\Interfaces\AssertErrorHandlerInterface;
 use Codememory\ApiBundle\Validator\Assert\Interfaces\AssertValidatorInterface;
 use Codememory\ApiBundle\Validator\JsonSchema\JsonSchemaValidator;
-use Codememory\Dto\Collectors\BaseCollector as DTOBaseCollector;
-use Codememory\Dto\DataKeyNamingStrategy\DataKeyNamingStrategySnakeCase;
-use Codememory\Dto\DecoratorHandlerRegistrar;
-use Codememory\Dto\Factory\ExecutionContextFactory as DTOExecutionContextFactory;
-use Codememory\Dto\Provider\DataTransferObjectPublicPropertyProvider;
-use Codememory\EntityResponseControl\Collectors\BaseCollector as ERCCollector;
-use Codememory\EntityResponseControl\DecoratorHandlerRegistrar as ERCDecoratorHandlerRegistrar;
-use Codememory\EntityResponseControl\Factory\ExecutionContextFactory as ERCContextFactory;
-use Codememory\EntityResponseControl\Provider\ResponsePrototypePrivatePropertyProvider;
-use Codememory\EntityResponseControl\ResponseKeyNamingStrategy\ResponseKeyNamingStrategySnakeCase;
-use Codememory\Reflection\ReflectorManager;
 use Exception;
-use Symfony\Component\Cache\Adapter\FilesystemAdapter;
 use Symfony\Component\Config\FileLocator;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Extension\Extension;
@@ -79,10 +65,6 @@ final class ApiExtension extends Extension
         $config = $this->processConfiguration(new Configuration(), $configs);
 
         $this->registerExceptionHandler($container, $config['http']['exception']);
-        $this->registerDTOParameters($config['dto'], $container);
-        $this->registerDefaultDTOServices($config['dto'], $container);
-        $this->registerERCParameters($config['erc'], $container);
-        $this->registerDefaultERCServices($container);
         $this->registerAssertServices($container, $config['assert']);
         $this->registerWorkerOptions($config['threading']['worker_options'], $container);
         $this->registerProcessOptions($config['threading']['process_options'], $container);
@@ -106,75 +88,6 @@ final class ApiExtension extends Extension
             ->addMethodCall('setConfig', [$config]);
 
         $container->setAlias(HttpExceptionConfigurationInterface::class, $config['config_service']);
-    }
-
-    private function registerDefaultDTOServices(array $config, ContainerBuilder $container): void
-    {
-        $container->register(ApiBundle::DTO_DEFAULT_COLLECTOR_SERVICE, DTOBaseCollector::class);
-        $container->register(ApiBundle::DTO_DEFAULT_EXECUTION_CONTEXT_FACTORY_SERVICE, DTOExecutionContextFactory::class);
-        $container->register(ApiBundle::DTO_DEFAULT_DATA_KEY_NAMING_STRATEGY_SERVICE, DataKeyNamingStrategySnakeCase::class);
-        $container->register(ApiBundle::DTO_DEFAULT_PROPERTY_PROVIDER_SERVICE, DataTransferObjectPublicPropertyProvider::class);
-        $container->register(ApiBundle::DTO_REFLECTOR_MANAGER_SERVICE, ReflectorManager::class);
-        $container->register(ApiBundle::DTO_DEFAULT_DECORATOR_HANDLER_REGISTRAR_SERVICE, DecoratorHandlerRegistrar::class);
-        $container
-            ->register(ApiBundle::DTO_DEFAULT_CACHE_ADAPTER_SERVICE, FilesystemAdapter::class)
-            ->setArguments([
-                '$namespace' => 'dto',
-                '$directory' => "{$container->getParameter('kernel.cache_dir')}/codememory"
-            ]);
-
-        $container
-            ->register(ApiBundle::DTO_DEFAULT_CONFIGURATION_FACTORY_SERVICE, DTOConfigurationFactory::class)
-            ->setArguments([
-                '$dataKeyNamingStrategy' => new Reference($config['data_key_strategy']['service']),
-                '$dataTransferObjectPropertyProvider' => new Reference($config['dto_property_provider']['service'])
-            ]);
-    }
-
-    private function registerDTOParameters(array $config, ContainerBuilder $container): void
-    {
-        $container->setParameter(ApiBundle::DTO_COLLECTOR_PARAMETER, $config['collector']['service']);
-        $container->setParameter(ApiBundle::DTO_CONFIGURATION_FACTORY_PARAMETER, $config['configuration']['factory_service']);
-        $container->setParameter(ApiBundle::DTO_EXECUTION_CONTEXT_FACTORY_PARAMETER, $config['context']['factory_service']);
-        $container->setParameter(ApiBundle::DTO_CACHE_PARAMETER, $config['cache']['adapter']);
-        $container->setParameter(ApiBundle::DTO_DATA_KEY_NAMING_STRATEGY_PARAMETER, $config['data_key_strategy']['service']);
-        $container->setParameter(ApiBundle::DTO_PROPERTY_PROVIDER_PARAMETER, $config['dto_property_provider']['service']);
-        $container->setParameter(ApiBundle::DTO_DECORATOR_HANDLER_REGISTRAR_PARAMETER, $config['decorator_handler_registrar']['service']);
-    }
-
-    private function registerDefaultERCServices(ContainerBuilder $container): void
-    {
-        $container->register(ApiBundle::ERC_DEFAULT_COLLECTOR_SERVICE, ERCCollector::class);
-        $container->register(ApiBundle::ERC_DEFAULT_EXECUTION_CONTEXT_FACTORY_SERVICE, ERCContextFactory::class);
-        $container->register(ApiBundle::ERC_DEFAULT_RESPONSE_KEY_NAMING_STRATEGY_SERVICE, ResponseKeyNamingStrategySnakeCase::class);
-        $container->register(ApiBundle::ERC_DEFAULT_PROPERTY_PROVIDER_SERVICE, ResponsePrototypePrivatePropertyProvider::class);
-        $container->register(ApiBundle::ERC_REFLECTOR_MANAGER_SERVICE, ReflectorManager::class);
-        $container->register(ApiBundle::ERC_DEFAULT_DECORATOR_HANDLER_REGISTRAR_SERVICE, ERCDecoratorHandlerRegistrar::class);
-
-        $container
-            ->register(ApiBundle::ERC_DEFAULT_CACHE_ADAPTER_SERVICE, FilesystemAdapter::class)
-            ->setArguments([
-                '$namespace' => 'erc',
-                '$directory' => "{$container->getParameter('kernel.cache_dir')}/codememory"
-            ]);
-
-        $container
-            ->register(ApiBundle::ERC_DEFAULT_CONFIGURATION_FACTORY_SERVICE, ERCConfigurationFactory::class)
-            ->setArguments([
-                '$responseKeyNamingStrategySnakeCase' => new Reference(ApiBundle::ERC_DEFAULT_RESPONSE_KEY_NAMING_STRATEGY_SERVICE),
-                '$responsePrototypePropertyProvider' => new Reference(ApiBundle::ERC_DEFAULT_PROPERTY_PROVIDER_SERVICE)
-            ]);
-    }
-
-    private function registerERCParameters(array $config, ContainerBuilder $container): void
-    {
-        $container->setParameter(ApiBundle::ERC_COLLECTOR_PARAMETER, $config['collector']['service']);
-        $container->setParameter(ApiBundle::ERC_CONFIGURATION_FACTORY_PARAMETER, $config['configuration']['factory_service']);
-        $container->setParameter(ApiBundle::ERC_EXECUTION_CONTEXT_FACTORY_PARAMETER, $config['context']['factory_service']);
-        $container->setParameter(ApiBundle::ERC_CACHE_PARAMETER, $config['cache']['adapter']);
-        $container->setParameter(ApiBundle::ERC_RESPONSE_KEY_NAMING_STRATEGY_PARAMETER, $config['response_key_strategy']['service']);
-        $container->setParameter(ApiBundle::ERC_PROPERTY_PROVIDER_PARAMETER, $config['prototype_property_provider']['service']);
-        $container->setParameter(ApiBundle::ERC_DECORATOR_HANDLER_REGISTRAR_PARAMETER, $config['decorator_handler_registrar']['service']);
     }
 
     private function registerAssertServices(ContainerBuilder $container, array $config): void

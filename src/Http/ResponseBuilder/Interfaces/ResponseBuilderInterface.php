@@ -4,6 +4,14 @@ namespace Codememory\ApiBundle\Http\ResponseBuilder\Interfaces;
 
 interface ResponseBuilderInterface
 {
+    public function getStatus(): int;
+
+    public function setStatus(int $statusCode): self;
+
+    public function getHeaders(): array;
+
+    public function setHeaders(array $headers): self;
+
     /**
      * @return array<string, ResponseComponentInterface>
      */

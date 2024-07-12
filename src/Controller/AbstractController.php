@@ -2,13 +2,17 @@
 
 namespace Codememory\ApiBundle\Controller;
 
-use Codememory\Dto\Interfaces\DataTransferObjectInterface;
+use Codememory\ApiBundle\Http\ResponseBuilder\Components\Data\DataComponent;
+use Codememory\ApiBundle\Http\ResponseBuilder\Components\Status\StatusComponent;
+use Codememory\ApiBundle\Http\ResponseBuilder\Interfaces\ResponseBuilderInterface;
+use Codememory\ApiBundle\Http\ResponseBuilder\Interfaces\ResponseComponentInterface;
 use Symfony\Component\HttpFoundation\RequestStack;
 
 abstract class AbstractController
 {
     public function __construct(
-        protected readonly RequestStack $requestStack
+        protected readonly RequestStack $requestStack,
+        protected readonly ResponseBuilderInterface $responseBuilder
     ) {
     }
 
@@ -20,12 +24,21 @@ abstract class AbstractController
         return array_merge($data, $request->request->all(), $request->files->all());
     }
 
-    protected function prepareDTO(DataTransferObjectInterface $dto, ?object $object = null, array $extraData = []): void
+    /**
+     * @param array<int, ResponseComponentInterface> $components
+     */
+    protected function buildResponse(array $data, int $statusCode = 200, array $headers = [], array $components = []): ResponseBuilderInterface
     {
-        if (null !== $object) {
-            $dto->setHarvestableObject($object);
+        $this->responseBuilder
+            ->setStatus($statusCode)
+            ->setHeaders($headers)
+            ->addComponent(new StatusComponent('success'))
+            ->addComponent(new DataComponent($data));
+
+        foreach ($components as $component) {
+            $this->responseBuilder->addComponent($component);
         }
 
-        $dto->collect(array_merge($this->getRequestData(), $extraData));
+        return $this->responseBuilder;
     }
 }

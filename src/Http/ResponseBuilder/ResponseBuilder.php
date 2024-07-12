@@ -9,6 +9,10 @@ use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 
 class ResponseBuilder implements ResponseBuilderInterface
 {
+    protected int $status = 200;
+
+    protected array $headers = [];
+
     /**
      * @var array<string, ResponseComponentInterface>
      */
@@ -35,6 +39,30 @@ class ResponseBuilder implements ResponseBuilderInterface
         }
 
         return $response;
+    }
+
+    public function getStatus(): int
+    {
+        return $this->status;
+    }
+
+    public function setStatus(int $statusCode): ResponseBuilderInterface
+    {
+        $this->status = $statusCode;
+
+        return $this;
+    }
+
+    public function getHeaders(): array
+    {
+        return $this->headers;
+    }
+
+    public function setHeaders(array $headers): ResponseBuilderInterface
+    {
+        $this->headers = $headers;
+
+        return $this;
     }
 
     public function getComponents(): array

@@ -2,13 +2,14 @@
 
 namespace Codememory\ApiBundle\Validator\JsonSchema;
 
+use Codememory\ApiBundle\Validator\JsonSchema\Interfaces\JsonSchemaValidatorInterface;
 use JsonSchema\Constraints\Factory;
 use JsonSchema\SchemaStorage;
 use JsonSchema\Uri\UriResolver;
 use JsonSchema\Uri\UriRetriever;
 use JsonSchema\Validator;
 
-class JsonSchemaValidator
+class JsonSchemaValidator implements JsonSchemaValidatorInterface
 {
     protected bool $isValidated = false;
     protected array $errors = [];
