@@ -8,7 +8,7 @@ use Codememory\ApiBundle\Paginator\Interfaces\PaginatorInterface;
 abstract class AbstractPaginator implements PaginatorInterface
 {
     protected int $page = 1;
-    protected int $limit = 0;
+    protected int $limit = 1;
 
     public function __construct(
         protected readonly PaginatorConfigurationInterface $configuration
