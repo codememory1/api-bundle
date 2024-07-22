@@ -37,15 +37,11 @@ abstract class AbstractPaginator implements PaginatorInterface
 
     public function getLimit(): int
     {
-        if ($this->limit < $this->configuration->getMinLimit()) {
-            return $this->configuration->getMinLimit();
-        }
-
-        if ($this->limit > $this->configuration->getMaxLimit()) {
+        if ($this->limit === -1) {
             return $this->configuration->getMaxLimit();
         }
 
-        return $this->limit;
+        return max($this->configuration->getMinLimit(), min($this->configuration->getMaxLimit(), $this->limit));
     }
 
     public function setLimit(int $limit): PaginatorInterface
