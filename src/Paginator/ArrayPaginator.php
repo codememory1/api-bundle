@@ -17,7 +17,7 @@ final class ArrayPaginator extends AbstractPaginator
     public function setValue(mixed $value): PaginatorInterface
     {
         if (!is_array($value)) {
-            throw new LogicException(sprintf('The %s method in the %s class expects the type argument %s', __METHOD__, self::class, 'array'));
+            throw new LogicException(sprintf('The "%s" method in the "%s" class expects the type argument "%s"', __METHOD__, self::class, 'array'));
         }
 
         $this->value = $value;
