@@ -28,7 +28,7 @@ class AssertValidator implements AssertValidatorInterface
     {
         $errors = $this->validator->validate($value, $constraints, $groups);
 
-        $this->isValid = count($errors) > 0;
+        $this->isValid = count($errors) < 1;
 
         $this->errorsHandler($errors);
         $this->dispatchErrorEvent($value, $errors);
