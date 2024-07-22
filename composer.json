@@ -9,20 +9,19 @@
     "authors": [
         {
             "name": "Codememory",
-            "email": "kostynd1@gmail.com"
+            "email": "codememory1@gmail.com"
         }
     ],
     "require": {
         "php": ">=8.3",
         "ext-pcntl": "*",
         "ext-posix": "*",
-        "symfony/orm-pack": "2.3.*",
-        "symfony/cache": "6.2.*",
-        "symfony/http-foundation": "6.2.*",
-        "symfony/validator": "6.2.*",
+        "symfony/orm-pack": "2.4.*",
+        "symfony/cache": "7.1.*",
+        "symfony/http-foundation": "7.1.*",
+        "symfony/validator": "7.1.*",
         "doctrine/doctrine-bundle": "*",
         "ramsey/uuid": "^4.7.3",
-        "justinrainbow/json-schema": "^5.2",
         "firebase/php-jwt": "^6.4"
     }
 }

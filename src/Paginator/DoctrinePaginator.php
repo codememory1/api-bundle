@@ -9,19 +9,19 @@ use LogicException;
 
 final class DoctrinePaginator extends AbstractPaginator
 {
-    private ?Query $paginatedValue = null;
+    private ?Query $value = null;
     private ?Paginator $paginator = null;
 
     /**
      * @param Query $value
      */
-    public function setPaginatedValue(mixed $value): PaginatorInterface
+    public function setValue(mixed $value): PaginatorInterface
     {
         if (!($value instanceof Query)) {
             throw new LogicException(sprintf('The %s method in the %s class expects the type argument %s', __METHOD__, self::class, Query::class));
         }
 
-        $this->paginatedValue = $value;
+        $this->value = $value;
 
         return $this;
     }
@@ -47,7 +47,7 @@ final class DoctrinePaginator extends AbstractPaginator
     private function getPaginator(): Paginator
     {
         if (null === $this->paginator) {
-            $this->paginator = new Paginator($this->paginatedValue);
+            $this->paginator = new Paginator($this->value);
         }
 
         return $this->paginator;

@@ -10,6 +10,7 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Event\ExceptionEvent;
 use Symfony\Component\HttpKernel\Exception\HttpExceptionInterface as SymfonyHttpExceptionInterface;
+use Throwable;
 
 final readonly class HttpExceptionEventListener
 {
@@ -25,7 +26,7 @@ final readonly class HttpExceptionEventListener
     {
         $exception = $event->getThrowable();
 
-        if ($this->canBeProcessed() && !in_array($exception::class, $this->configuration->getExcludedExceptions(), true)) {
+        if ($this->canBeProcessed() && !$this->isExcluded($exception)) {
             if ($exception instanceof SymfonyHttpExceptionInterface) {
                 $this->handler($event, $exception->getStatusCode(), $exception->getMessage(), $exception->getHeaders());
             }
@@ -34,12 +35,17 @@ final readonly class HttpExceptionEventListener
 
     private function canBeProcessed(): bool
     {
-        return PHP_SAPI !== 'cli' || $this->isDev() || $this->debug;
+        return PHP_SAPI !== 'cli' && (!$this->isDev() && !$this->debug);
     }
 
     private function isDev(): bool
     {
         return str_starts_with($this->env, 'dev');
+    }
+
+    private function isExcluded(Throwable $exception): bool
+    {
+        return in_array($exception::class, $this->configuration->getExcludedExceptions(), true);
     }
 
     private function handler(ExceptionEvent $event, int $statusCode, string $message, array $headers = []): void

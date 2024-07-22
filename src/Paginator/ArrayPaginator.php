@@ -9,25 +9,25 @@ use LogicException;
 
 final class ArrayPaginator extends AbstractPaginator
 {
-    private array $paginatedValue = [];
+    private array $value = [];
 
     /**
      * @param array $value
      */
-    public function setPaginatedValue(mixed $value): PaginatorInterface
+    public function setValue(mixed $value): PaginatorInterface
     {
         if (!is_array($value)) {
             throw new LogicException(sprintf('The %s method in the %s class expects the type argument %s', __METHOD__, self::class, 'array'));
         }
 
-        $this->paginatedValue = $value;
+        $this->value = $value;
 
         return $this;
     }
 
     public function getTotalRecords(): int
     {
-        return count($this->paginatedValue);
+        return count($this->value);
     }
 
     public function getTotalPages(): int
@@ -37,6 +37,6 @@ final class ArrayPaginator extends AbstractPaginator
 
     public function getData(): array
     {
-        return array_slice($this->paginatedValue, $this->getOffsetFrom(), $this->getLimit());
+        return array_slice($this->value, $this->getOffsetFrom(), $this->getLimit());
     }
 }

@@ -3,7 +3,6 @@
 namespace Codememory\ApiBundle\JWT;
 
 use Codememory\ApiBundle\JWT\Interfaces\JWTInterface;
-use DateTimeImmutable;
 use Firebase\JWT\JWT as FirebaseJWT;
 use Firebase\JWT\Key;
 use const JSON_THROW_ON_ERROR;
@@ -15,11 +14,9 @@ class JWT implements JWTInterface
 
     protected function payloadBuilder(array $payload, int $expire): array
     {
-        $now = new DateTimeImmutable();
-
         return [
-            'exp' => $now->getTimestamp() + $expire,
-            'lat' => $now->getTimestamp(),
+            'exp' => time() + $expire,
+            'lat' => time(),
             ...$payload
         ];
     }

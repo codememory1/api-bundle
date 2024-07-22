@@ -2,54 +2,63 @@
 
 namespace Codememory\ApiBundle\Paginator;
 
+use Codememory\ApiBundle\Paginator\Interfaces\PaginatorConfigurationInterface;
 use Codememory\ApiBundle\Paginator\Interfaces\PaginatorInterface;
-use Codememory\ApiBundle\Paginator\Interfaces\PaginatorOptionsInterface;
 
 abstract class AbstractPaginator implements PaginatorInterface
 {
+    protected int $page = 1;
+    protected int $limit = 0;
+
     public function __construct(
-        protected readonly PaginatorOptionsInterface $options
+        protected readonly PaginatorConfigurationInterface $configuration
     ) {
     }
 
-    public function getCurrentPage(): int
+    public function getPage(): int
     {
-        $pageFromQuery = $this->options->getPage();
-
-        if (-1 === $pageFromQuery) {
+        if ($this->page === -1 || $this->page > $this->getTotalPages()) {
             return $this->getTotalPages();
         }
 
-        if ($pageFromQuery < 1) {
+        if ($this->page < 1) {
             return 1;
         }
 
-        if ($pageFromQuery > $this->getTotalPages()) {
-            return $this->getTotalPages();
-        }
-
-        return $pageFromQuery;
+        return $this->page;
     }
 
-    public function getOffsetFrom(): int
+    public function setPage(int $page): PaginatorInterface
     {
-        $offset = ($this->getCurrentPage() * $this->getLimit()) - $this->getLimit();
+        $this->page = $page;
 
-        return max($offset, 0);
+        return $this;
     }
 
     public function getLimit(): int
     {
-        $limitFromQuery = $this->options->getLimit();
-
-        if ($limitFromQuery < 1) {
-            return 1;
+        if ($this->limit < $this->configuration->getMinLimit()) {
+            return $this->configuration->getMinLimit();
         }
 
-        if ($limitFromQuery > $this->options->getConfiguration()->getMaxLimit()) {
-            return $this->options->getConfiguration()->getMaxLimit();
+        if ($this->limit > $this->configuration->getMaxLimit()) {
+            return $this->configuration->getMaxLimit();
         }
 
-        return $limitFromQuery;
+        return $this->limit;
+    }
+
+    public function setLimit(int $limit): PaginatorInterface
+    {
+        $this->limit = $limit;
+
+        return $this;
+    }
+
+    public function getOffsetFrom(): int
+    {
+        $offset = ($this->getPage() * $this->getLimit()) - $this->getLimit();
+
+        return max($offset, 0);
     }
 }

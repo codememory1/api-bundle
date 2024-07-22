@@ -13,8 +13,6 @@ final class ApiBundle extends Bundle
 {
     // Paginator Services
     public const string PAGINATION_DEFAULT_CONFIGURATION_SERVICE = 'codememory.pagination.default_configuration';
-    public const string PAGINATION_DEFAULT_OPTIONS_SERVICE = 'codememory.pagination.default_options';
-    public const string PAGINATION_DEFAULT_PAGINATOR = 'codememory.pagination.default_paginator';
 
     // Assert
     public const string ASSERT_DEFAULT_VALIDATOR_SERVICE = 'codememory.assert.default_validator';

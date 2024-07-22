@@ -21,18 +21,12 @@ use Codememory\ApiBundle\Multithreading\WorkerOptions;
 use Codememory\ApiBundle\Paginator\ArrayPaginator;
 use Codememory\ApiBundle\Paginator\DoctrinePaginator;
 use Codememory\ApiBundle\Paginator\Interfaces\PaginatorConfigurationInterface;
-use Codememory\ApiBundle\Paginator\Interfaces\PaginatorOptionsInterface;
 use Codememory\ApiBundle\Paginator\PaginatorConfiguration;
-use Codememory\ApiBundle\Paginator\PaginatorOptions;
-use Codememory\ApiBundle\QueryProcessor\FilterQueryProcessor;
-use Codememory\ApiBundle\QueryProcessor\PaginationQueryProcessor;
-use Codememory\ApiBundle\QueryProcessor\SortQueryProcessor;
 use Codememory\ApiBundle\Resolver\ControllerArgumentValueAttributeResolver;
 use Codememory\ApiBundle\Validator\Assert\AssertErrorHandler;
 use Codememory\ApiBundle\Validator\Assert\AssertValidator;
 use Codememory\ApiBundle\Validator\Assert\Interfaces\AssertErrorHandlerInterface;
 use Codememory\ApiBundle\Validator\Assert\Interfaces\AssertValidatorInterface;
-use Codememory\ApiBundle\Validator\JsonSchema\JsonSchemaValidator;
 use Exception;
 use Symfony\Component\Config\FileLocator;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
@@ -40,7 +34,6 @@ use Symfony\Component\DependencyInjection\Extension\Extension;
 use Symfony\Component\DependencyInjection\Loader\YamlFileLoader;
 use Symfony\Component\DependencyInjection\Reference;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
-use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 final class ApiExtension extends Extension
@@ -71,8 +64,6 @@ final class ApiExtension extends Extension
         $this->registerPaginator($config['pagination'], $container);
         $this->registerJWT($container);
         $this->registerProcessManager($container);
-        $this->registerJsonSchemaValidator($container);
-        $this->registerQueryProcessors($container);
         $this->registerResolver($container);
 
         $this->registerResponseBuilder($container);
@@ -139,13 +130,6 @@ final class ApiExtension extends Extension
         $container->setAlias(ProcessManager::class, ApiBundle::PROCESS_MANAGER_SERVICE_ID);
     }
 
-    private function registerJsonSchemaValidator(ContainerBuilder $container): void
-    {
-        $container->register(ApiBundle::JSON_SCHEMA_VALIDATOR_SERVICE_ID, JsonSchemaValidator::class);
-
-        $container->setAlias(JsonSchemaValidator::class, ApiBundle::JSON_SCHEMA_VALIDATOR_SERVICE_ID);
-    }
-
     private function registerPaginator(array $config, ContainerBuilder $container): void
     {
         $container
@@ -153,50 +137,14 @@ final class ApiExtension extends Extension
             ->setArgument('$config', $config);
 
         $container
-            ->register(ApiBundle::PAGINATION_DEFAULT_OPTIONS_SERVICE, PaginatorOptions::class)
-            ->setArguments([
-                '$paginationQueryProcessor' => new Reference(PaginationQueryProcessor::class),
-                '$configuration' => new Reference($config['configuration_service'])
-            ]);
-
-        $container
-            ->register(ApiBundle::PAGINATION_DEFAULT_PAGINATOR, DoctrinePaginator::class)
-            ->setArgument('$options', new Reference($config['options_service']));
-
-        $container
             ->register(DoctrinePaginator::class, DoctrinePaginator::class)
-            ->setArgument('$options', new Reference(PaginatorOptionsInterface::class));
+            ->addArgument(new Reference(PaginatorConfigurationInterface::class));
 
         $container
             ->register(ArrayPaginator::class, ArrayPaginator::class)
-            ->setArgument('$options', new Reference(PaginatorOptionsInterface::class));
+            ->addArgument(new Reference(PaginatorConfigurationInterface::class));
 
         $container->setAlias(PaginatorConfigurationInterface::class, $config['configuration_service']);
-        $container->setAlias(PaginatorOptionsInterface::class, $config['options_service']);
-    }
-
-    private function registerQueryProcessors(ContainerBuilder $container): void
-    {
-        $container
-            ->register(FilterQueryProcessor::class, FilterQueryProcessor::class)
-            ->setArguments([
-                '$requestStack' => new Reference(RequestStack::class),
-                '$jsonSchemaValidator' => new Reference(JsonSchemaValidator::class)
-            ]);
-
-        $container
-            ->register(SortQueryProcessor::class, SortQueryProcessor::class)
-            ->setArguments([
-                '$requestStack' => new Reference(RequestStack::class),
-                '$jsonSchemaValidator' => new Reference(JsonSchemaValidator::class)
-            ]);
-
-        $container
-            ->register(PaginationQueryProcessor::class, PaginationQueryProcessor::class)
-            ->setArguments([
-                '$requestStack' => new Reference(RequestStack::class),
-                '$jsonSchemaValidator' => new Reference(JsonSchemaValidator::class)
-            ]);
     }
 
     private function registerResolver(ContainerBuilder $container): void
